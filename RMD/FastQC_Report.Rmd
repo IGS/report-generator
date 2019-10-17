@@ -1,0 +1,213 @@
+---
+output: pdf_document
+params:
+  projectname: "Project"
+  thedate: !r Sys.Date()
+  infof: ".info"
+  pathd: "/"
+title: "FastQC Report for `r params$projectname`"
+author: "Institute for Genome Sciences (IGS) Trancriptomics Analysis Team"
+date: "`r params$thedate`"
+---
+\  
+
+The FastQC report presents graphical displays of the sequence quality. These graphs were created
+using the quality control software FastQC (Documentation:
+https://www.bioinformatics.babraham.ac.uk/projects/fastqc/). This report includes up to two
+samples per group. There are two graphs for each fastq file.
+
+The BoxWhisker plots illustrate the distribution of per base quality across all reads for the
+samples. The central red line is the median value, the yellow box represents the inter-quartile
+range (25-75%), the upper and lower whiskers represent the 10% and 90% points and the blue line
+represents the mean quality. The y-axis on the graph shows the quality scores. A higher score
+indicates a better the base call.
+
+The graphs illustrate the occurrence of the top 6 kmers across all reads for the sample. The Kmer
+assumes that any small fragment of sequence should not have a positional bias in its apearance
+within a diverse library. Only 2% of the whole library is analysed and the results are
+extrapolated to the rest of the library.
+
+The left panels are the first read of the read-pair. The right panels are the second read of the
+read-pair. The figures for all samples can be found in the BDBag. Images illustrating other
+metrics of read quality can also be found in the BDBag. A short description of all images
+generated can be found at the end of this report.
+
+\  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rmarkdown)
+library(knitr)
+library(png)
+library(grid)
+library(gridExtra)
+library(ggplot2)
+library(magick)
+```
+
+```{r, include=FALSE}
+direc=unlist(params$pathd)
+```
+
+```{r grid, echo=FALSE, fig.show='hide'}
+setwd(direc)
+filen<-"Summary.txt"
+info<-unlist(params$infof)
+#info="/Users/achatterjee/XMMCL_2018.samples.info"
+myinfo <- data.frame(read.table(info, check.names=FALSE))
+path=getwd()
+gridpath=paste0(direc,"/FastQC_Outputs")
+dir.create(file.path(path, gridpath), showWarnings = FALSE)
+baseQ<-paste0(direc, "/FastQC_Files/BaseQuality/")
+KmerP<-paste0(direc, "/FastQC_Files/KmerProfiles/")
+d1<-data.frame()
+select<-data.frame()
+groups<-levels(myinfo$V2)
+counter<-length(groups)
+for (i in 1:counter)
+{
+  d1<-myinfo[which(myinfo$V2==groups[i]), ]
+  if(nrow(d1)>=2)
+  {
+  rand<-sample.int(nrow(d1), 2)
+    for(j in rand)
+    {
+      select<-rbind(select, d1[j,])
+    }
+  }
+  if(nrow(d1)==1)
+  {
+    select<-rbind(select, d1)
+  }
+}
+sN<-select$V1
+sampleN<-as.vector(sN)
+inFilePaths<-list()
+listnum<-list()
+sname<-list()
+hold<-vector()
+headers<-list()
+for(k in 1:length(sampleN))
+{
+  searchf<-paste0(sampleN[k],"*")
+  head1<-paste0(sampleN[k]," Forward")
+  head2<-paste0(sampleN[k]," Reverse")
+  headers<-rbind(headers, head1, head2)
+  listnum<-rbind(listnum, k, k)
+  sname<-rbind(sname,sampleN[k], sampleN[k])
+  inFilef <- list.files(baseQ, pattern=glob2rx(searchf), full.names=TRUE)
+  inFilePaths<-rbind(inFilePaths, inFilef)
+}
+selectpaths<-unlist(inFilePaths, recursive = TRUE, use.names = TRUE)
+snameV<-as.vector(sname)
+headersU<-unlist(headers, recursive = TRUE, use.names = TRUE)
+images<-image_read(selectpaths)
+num<-length(images)
+
+###First Image Caption
+first1<-grid::rasterGrob(as.raster(images[1]))
+first2<-grid::rasterGrob(as.raster(images[2]))
+cap<-paste("Box plots illustrating the distribution of per base quality across all reads for sample. Left Panel: First read of read-pair. Right panel: Second read of read-pair")
+  str<-paste (headersU[1], headersU[2], collapse = " ", sep = "                                                                                ")
+for(i in seq(1,num,2)){
+  raster1<-grid::rasterGrob(as.raster(images[i]))
+  raster2<-grid::rasterGrob(as.raster(images[i+1]))
+  cap1<-paste("Figure: Box plots illustrating the distribution of per base quality across all reads for sample")
+  cap2<-"Left Panel: First read of read-pair. Right panel: Second read of read-pair"
+  cap<-paste(cap1," ", snameV[i], ". ", cap2)
+  str<-paste (headersU[i], headersU[i+1], collapse = " ", sep = "                                                                                ")
+  g<-grid.arrange(raster1, raster2, ncol=2, top=textGrob(str, gp=gpar(fontface = 3L, fontsize=5)))
+  
+  ggsave(g, file=paste0("grid_", i,"_baseq_fig.png"), width = 6, height = 2.5, path=gridpath)
+}
+
+```
+
+```{r kmerProfiles, echo=FALSE,fig.show='hide'}
+infilekmerPaths<-list()
+
+for(k in 1:length(sampleN))
+{
+  searchf<-paste0(sampleN[k],"*")
+  head1<-paste0(sampleN[k]," Forward")
+  head2<-paste0(sampleN[k]," Reverse")
+  headers<-rbind(headers, head1, head2)
+  inFilef <- list.files(path=KmerP, pattern=glob2rx(searchf), full.names=TRUE)
+  infilekmerPaths<-rbind(infilekmerPaths, inFilef)
+}
+selectkmerpaths<-unlist(infilekmerPaths, recursive = TRUE, use.names = TRUE)
+imagesK<-list()
+imagesK<-image_read(selectkmerpaths)
+numk<-length(imagesK)
+
+##First kmer
+firstK1<-grid::rasterGrob(as.raster(imagesK[1]))
+firstK2<-grid::rasterGrob(as.raster(imagesK[2]))
+cap<-paste("Plots illustrating the occurrence of the top 6 kmers across all reads for sample. Left Panel: First read of read-pair. Right panel: Second read of read-pair")
+  str<-paste (headersU[1], headersU[2], collapse = " ", sep = "                                                                                ")
+  #g<-grid.arrange(firstK1, firstK2, ncol=2, top=textGrob(str, gp=gpar(fontface = 3L, fontsize=5)), bottom = textGrob(cap, gp = gpar(fontface = 3L, fontsize = 5)))
+  #g<-grid.arrange(firstK1, firstK2, ncol=2, top=textGrob(str, gp=gpar(fontface = 3L, fontsize=5)))
+  #ggsave(g, file=paste0("grid_kmer_first.png"), width = 6, height = 2.5, path=gridpath)
+  
+for(i in seq(1,numk,2)){
+  raster1<-grid::rasterGrob(as.raster(imagesK[i]))
+  raster2<-grid::rasterGrob(as.raster(imagesK[i+1]))
+  capk1<-paste("Figure: Plots illustrating the occurrence of the top 6 kmers across all reads for sample")
+  capk2<-"Left Panel: First read of read-pair. Right panel: Second read of read-pair"
+  cap<-paste(cap1," ", snameV[i], ". ", cap2)
+  str<-paste (headersU[i], headersU[i+1], collapse = " ", sep = "                                                                                ")
+  g<-grid.arrange(raster1, raster2, ncol=2, top=textGrob(str, gp=gpar(fontface = 3L, fontsize=5)))
+  
+  ggsave(g, file=paste0("grid_", i,"_kmer_fig.png"), width = 6, height = 2.5, path=gridpath)
+}
+```
+
+```{r firstcap, echo=FALSE}
+#firstim<-list.files(gridpath, pattern = "_first.png", full.names = TRUE)
+#include_graphics(firstim, dpi=250)
+```
+
+```{r images, echo=FALSE, out.height='100%', out.width='100%'}
+myimages<-list.files(gridpath, pattern = "_fig.png", full.names = TRUE)
+foo<-list()
+include_graphics(myimages, dpi=250)
+```
+\newpage
+```{r table,  echo=FALSE, out.height='100%', out.width='100%'}
+df_images<-data.frame()
+
+Image_Type<-c("Adapter Content", "Base Quality", "Duplication Levels", "Kmer Profiles",
+                        "Per Base N Content", "Per Base Sequence Content", "Per Sequence GC Content",
+              "Per Sequence Quality Scores",
+                        "Per Tile Sequence Quality", "Sequence Length Distribution")
+#df_images$type<-list()
+#df_images$type<-Image_Type
+Description<-c("Illustrates the total proportion of your library that contains Adapter Kmers",
+                         "Illustrates the distribution of per base quality across all reads for the samples",
+                         "Illustrates the degree of duplication for every sequence in a library",
+                         "Illustrate the occurrence of the top 6 kmers across all reads for the sample",
+                         "Illustrates the percentage of base calls at each position for which an N was called",
+                         "Illustrates the proportion of each base position for which each of the four normal DNA bases has been called.",
+                         "Illustrates GC content across the whole length of each sequence",
+                         "Illustrates if a subset of your sequences have universally low quality values",
+                         "Illustrates the quality scores from each tile across all the bases",
+                         "Illustrates the distribution of fragment sizes")
+
+df_images<-data.frame(Image_Type, Description)
+
+mytheme <- gridExtra::ttheme_default(core = list(fg_params=list(cex = 0.5, fontface="plain")),colhead = list(fg_params=list(cex = 0.5, fontface="bold")),rowhead = list(fg_params=list(cex = 0.5, fontface="bold")))
+
+ss <- tableGrob(df_images, theme = mytheme)
+
+h_grob <- grobHeight(ss)
+w2 <- grobWidth(ss)
+
+title_wrap<-strwrap("Table 1. FastQC Outputs: Table summarizing various outputs generated by FastQC that can be found in the BDBag", width = 100, simplify = F)
+
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+  
+title_images <- textGrob(title_wrapped, gp=gpar(fontsize=9), y=unit(0.5,"npc")+ 0.75*h_grob, vjust=0)
+gt_fastqc <- gTree(children=gList(ss, title_images))
+#grid.draw(gt_fastqc)
+grid.arrange(ss, top=textGrob(title_wrapped, gp=gpar(fontsize=8)))
+```
+
