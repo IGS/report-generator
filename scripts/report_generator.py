@@ -22,16 +22,42 @@ def main():
     parser.add_option("-i", "--info", dest="info",help="Path to Info file", metavar="PATH")
     parser.add_option("-m", "--mapping", dest="mapping",help="Path to mapping file", metavar="PATH")
 
+    parser.add_option("-f", "--fqcwrapper", dest="fwrap",help="Path to fastQC wrapper script", metavar="PATH")
+    parser.add_option("-w", "--alignwrapper", dest="awrap",help="Path to Alignment wrapper script", metavar="PATH")
+    parser.add_option("-d", "--dewrapper", dest="dwrap",help="Path to DE wrapper script", metavar="PATH")
+    parser.add_option("-g", "--gewrapper", dest="gwrap",help="Path to GE wrapper script", metavar="PATH")
+
     (options, args) = parser.parse_args()
     #wrap_FQC="/usr/local/packages/report_generation/wrapper_FastQC.R"
-    
-    wrap_FQC="/home/apaala.chatterjee/RNA_Report/wrapper_FastQC.R"
-    wrap_ALN_prok="/home/apaala.chatterjee/RNA_Report/wrapper_Alignment_prok.R"
-    wrap_ALN= "/home/apaala.chatterjee/RNA_Report/wrapper_Alignment.R"
-    wrap_GE="/home/apaala.chatterjee/RNA_Report/wrapper_GE.R"
-    wrap_DE="/home/apaala.chatterjee/RNA_Report/wrapper_DE.R"
-    wrap_DE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_DE_mapping.R"
-    wrap_GE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_GE_mapping.R"
+    if options.fwrap:
+        wrap_FQC=options.fwrap
+    else:
+        wrap_FQC="/home/apaala.chatterjee/RNA_Report/wrapper_FastQC.R"
+    if options.awrap:
+        wrap_ALN = options.awrap
+    elif not options.awrap and options.prok:
+        wrap_ALN_prok="/home/apaala.chatterjee/RNA_Report/wrapper_Alignment_prok.R"
+    else:
+        wrap_ALN= "/home/apaala.chatterjee/RNA_Report/wrapper_Alignment.R"
+    if options.gwrap:
+        wrap_GE = options.gwrap
+    elif not options.gwrap and options.mapping:
+        wrap_GE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_GE_mapping.R"
+    else:
+        wrap_GE="/home/apaala.chatterjee/RNA_Report/wrapper_GE.R"
+    if options.dwrap:
+        wrap_DE = options.dwrap
+    elif not options.dwrap and options.mapping:
+        wrap_DE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_DE_mapping.R"
+    else:
+        wrap_DE="/home/apaala.chatterjee/RNA_Report/wrapper_DE.R"
+
+    #wrap_ALN_prok="/home/apaala.chatterjee/RNA_Report/wrapper_Alignment_prok.R"
+    #wrap_ALN= "/home/apaala.chatterjee/RNA_Report/wrapper_Alignment.R"
+    #wrap_GE="/home/apaala.chatterjee/RNA_Report/wrapper_GE.R"
+    #wrap_DE="/home/apaala.chatterjee/RNA_Report/wrapper_DE.R"
+    #wrap_DE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_DE_mapping.R"
+    #wrap_GE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_GE_mapping.R"
     counts_script="/usr/local/packages/report_generation/Generate_all_counts.R"
     rpath="/usr/local/packages/r-3.4.0/bin/Rscript"
 
