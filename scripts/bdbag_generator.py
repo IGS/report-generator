@@ -69,7 +69,7 @@ def copy_files_to_dir(these_files, to_here):
 def create_bag(output_dir, update):
     """Create/Update and archive a BDBag from the contents of a passed-in directory."""
     bdbag_api.make_bag(output_dir, update=update)
-    bdbag_api.archive_bag(output_dir, "zip")
+    return bdbag_api.archive_bag(output_dir, "zip")
 
 def generate_all_counts(path_to_counts):
     counts_list = [f for f in os.listdir(path_to_counts) if f.endswith('.counts') or f.endswith('.counts.txt')]
