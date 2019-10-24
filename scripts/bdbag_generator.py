@@ -27,14 +27,7 @@ def main():
     parser.add_argument("-b", "--bam", dest="bam",help="Pull BAMs into BAG", action='store_true')
     parser.add_argument("-s", "--sam", dest="sam",help="Pull SAMs into BAG", action='store_true')
     parser.add_argument("-m", "--make", dest="make",help="Make BDBAG", action='store_true')
-    parser.add_argument("-r", "-rb", dest="rb",help="R Path", metavar="PATH")
     args = parser.parse_args()
-    
-    #Set R binary path
-    if args.rb:
-        r_binary = args.rb
-    else:
-        r_binary = "/usr/local/packages/r-3.4.0/bin/Rscript"    
     
     ergatis_repository = os.path.normpath(args.pdir + "/output_repository/")
 
@@ -56,16 +49,11 @@ def main():
     if args.de and not args.allreports:
         only_de = generate_de_report(output_dir, ergatis_repository, args.pid)
     if args.allreports:
-        only_fqc = generate_fastqc_report(output_dir, ergatis_repository, args.pid)
-        only_aln = generate_alignment_report(output_dir, ergatis_repository, args.pid)
-        only_ge = generate_ge_report(output_dir, ergatis_repository, args.pid)
-        only_de = generate_de_report(output_dir, ergatis_repository, args.pid)
+        generate_all_reports(output_dir, ergatis_repository, args.pid)
     if args.make and not args.update:
-        bdbag_api.make_bag(output_dir)
-        bdbag_api.archive_bag(output_dir, "zip")
+        create_bag(output_dir, False)
     if args.update:
-        bdbag_api.make_bag(output_dir, update = True)
-        bdbag_api.archive_bag(output_dir, "zip")
+        create_bag(output_dir, True)
 
 def copy_bam_files():
     pass
@@ -77,6 +65,11 @@ def copy_files_to_dir(these_files, to_here):
     for i in range(len(these_files)):
         syscmd = "cp "+ these_files[i] + " " + to_here[i]
         os.system(syscmd) 
+
+def create_bag(output_dir, update):
+    """Create/Update and archive a BDBag from the contents of a passed-in directory."""
+    bdbag_api.make_bag(output_dir, update=update)
+    bdbag_api.archive_bag(output_dir, "zip")
 
 def generate_all_counts(path_to_counts):
     counts_list = [f for f in os.listdir(path_to_counts) if f.endswith('.counts') or f.endswith('.counts.txt')]
@@ -93,6 +86,13 @@ def generate_all_counts(path_to_counts):
     all_counts_merge.rename(columns = {0: "ID"}, inplace = True)
     print(all_counts_merge.head())
     return(all_counts_merge)
+
+def generate_all_reports(outdir, ergatis_repository, ergatis_pid):
+    """Generate all possible reports."""
+    only_fqc = generate_fastqc_report(output_dir, ergatis_repository, ergatis_pid)
+    only_aln = generate_alignment_report(output_dir, ergatis_repository, ergatis_pid)
+    only_ge = generate_ge_report(output_dir, ergatis_repository, ergatis_pid)
+    only_de = generate_de_report(output_dir, ergatis_repository, ergatis_pid)
 
 def generate_alignment_report(outdir, ergatis_repository, ergatis_pid):
     """
