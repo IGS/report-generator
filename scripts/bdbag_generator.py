@@ -1,12 +1,7 @@
-import getopt, sys, os
-from optparse import OptionParser
-import os
-import subprocess
+import sys, os
 import ntpath
-import zipfile
 import argparse
 import shutil
-import pathlib
 import pandas
 from bdbag import bdbag_api
 import bagit
