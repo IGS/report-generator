@@ -37,19 +37,20 @@ def main():
     #Check What reports are requested and pulling relevant files
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    if args.fqc and not args.allreports:
-        print("Starting FastQC file gathering")
-        only_fqc = generate_fastqc_report(output_dir, ergatis_repository, args.pid)
-    if args.aln and not args.allreports:
-        print("Starting Alignment file gathering")
-        only_aln = generate_alignment_report(output_dir, ergatis_repository, args.pid)
-    if args.ge and not args.allreports:
-        print("Starting GE file gathering")
-        only_ge = generate_ge_report(output_dir, ergatis_repository, args.pid)
-    if args.de and not args.allreports:
-        only_de = generate_de_report(output_dir, ergatis_repository, args.pid)
     if args.allreports:
         generate_all_reports(output_dir, ergatis_repository, args.pid)
+    else:
+        if args.fqc:
+            print("Starting FastQC file gathering")
+            only_fqc = generate_fastqc_report(output_dir, ergatis_repository, args.pid)
+        if args.aln:
+            print("Starting Alignment file gathering")
+            only_aln = generate_alignment_report(output_dir, ergatis_repository, args.pid)
+        if args.ge:
+            print("Starting GE file gathering")
+            only_ge = generate_ge_report(output_dir, ergatis_repository, args.pid)
+        if args.de:
+            only_de = generate_de_report(output_dir, ergatis_repository, args.pid)
     if args.make and not args.update:
         create_bag(output_dir, False)
     if args.update:

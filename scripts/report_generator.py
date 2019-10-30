@@ -62,43 +62,56 @@ def main():
     rpath="/usr/local/packages/r-3.4.0/bin/Rscript"
 
     if options.bdbag and options.outdir and options.pname:
-        out_base = os.path.normpath(options.outdir)
-        bdbag_api.extract_bag(options.bdbag, output_path = out_base)
-        extracted_path = os.path.normpath(out_base + "/" + options.pname + "/data/")
+        extracted_path = extract_bag(options.bdbag, output_directory=options.outdir, project_name=options.pname)
         copy(options.info, extracted_path)
 
-        if(options.fqc or options.all):
-            generate_fastqc_report(extracted_path, wrap_FQC, rpath, options.pname, options.info)
+        if options.all:
+            wrap_dir = os.path.dirname(wrap_DE)
+            generate_all_reports(extracted_path, wrap_dir, rpath, options.pname, options.info, options.prok, options.mapping)
+        else:
+            if options.fqc:
+                generate_fastqc_report(extracted_path, wrap_FQC, rpath, options.pname, options.info)
 
-        if((options.aln or options.all) and not options.prok):
-            generate_alignment_report(extracted_path, wrap_ALN, rpath, options.pname, options.info)
-    
-        if((options.aln or options.all) and options.prok):
-            generate_alignment_report_prok(extracted_path, wrap_ALN_prok, rpath, options.pname, options.info)
-    
-        if((options.ge or options.all) and not options.mapping):
-            generate_ge_report(extracted_path, wrap_GE, rpath, options.pname, options.info)
+            if options.aln:
+                if options.prok:
+                    generate_alignment_report_prok(extracted_path, wrap_ALN_prok, rpath, options.pname, options.info)
+                else:
+                    generate_alignment_report(extracted_path, wrap_ALN, rpath, options.pname, options.info)
 
-        elif((options.ge or options.all) and options.mapping):
-            print("In mapping file GE")
-            map_to_GE(extracted_path, wrap_GE_mapping, rpath, options.pname, options.info, options.mapping)
-        
-        if((options.de or options.all) and not options.mapping):
-            generate_de_report(extracted_path, wrap_DE, rpath, options.pname, options.info)
+            if options.ge:
+                if options.mapping:
+                    print("In mapping file GE")
+                    map_to_GE(extracted_path, wrap_GE_mapping, rpath, options.pname, options.info, options.mapping)
+                else:
+                    generate_ge_report(extracted_path, wrap_GE, rpath, options.pname, options.info)
 
-        elif((options.de or options.all) and options.mapping):
-            print("In mapping file DE")
-            map_to_DE(extracted_path, wrap_DE_mapping, rpath, options.pname, options.info, options.mapping)
-        
+            if options.de:
+                if options.mapping:
+                    print("In mapping file DE")
+                    map_to_DE(extracted_path, wrap_DE_mapping, rpath, options.pname, options.info, options.mapping)
+                else:
+                    generate_de_report(extracted_path, wrap_DE, rpath, options.pname, options.info)
+
         if(options.update):
-            bag_path = os.path.normpath(out_base + "/" + options.pname)
-            bdbag_api.make_bag(bag_path, update = True)
-            bdbag_api.archive_bag(bag_path, "zip")
-    
+            update_bag(options.outdir, project_name=options.pname)
+
+def extract_bag(bdbag_zip_path, output_directory=None, project_name=None):
+    """Extract BDBag contents into named output directory in original BDBag location."""
+    (before, sep, after) = bdbag_zip_path.rpartition('.zip')
+    prefix = os.path.basename(before)
+    if project_name:
+        prefix = project_name
+    outdir = os.path.dirname(before)
+    if output_directory:
+        outdir = output_directory
+    outdir = os.path.normpath(outdir)
+    bdbag_api.extract_bag(bdbag_zip_path, output_path=outdir)
+    return os.path.normpath(outdir + "/" + prefix + "/data/")
+
 def generate_all_counts(path_to_counts):
     """
-    Input: path to directory with counts files 
-    
+    Input: path to directory with counts files
+
     Output: Single merged counts dataframe
     """
 
@@ -117,10 +130,34 @@ def generate_all_counts(path_to_counts):
     print(all_counts_merge.head())
     return(all_counts_merge)
 
+def generate_all_reports(outdir, wrappers_dir, rpath, project_name, info_file, prok, mapping_file):
+    """Generate all possible reports.  Assumes all wrapper scripts are in the same directory."""
+
+    wrap_FQC = os.path.join(wrappers_dir, "wrapper_FastQC.R")
+    generate_fastqc_report(extracted_path, wrap_FQC, rpath, options.pname, options.info)
+
+    if prok:
+        wrap_ALN_prok = os.path.join(wrappers_dir, "wrapper_Alignment_prok.R")
+        generate_alignment_report_prok(extracted_path, wrap_ALN_prok, rpath, options.pname, options.info)
+    else:
+        wrap_ALN = os.path.join(wrappers_dir, "wrapper_Alignment.R")
+        generate_alignment_report(extracted_path, wrap_ALN, rpath, options.pname, options.info)
+
+    if mapping_file:
+        wrap_GE_mapping = os.path.join(wrappers_dir, "wrapper_GE_mapping.R")
+        wrap_DE_mapping = os.path.join(wrappers_dir, "wrapper_DE_mapping.R")
+        map_to_GE(extracted_path, wrap_GE_mapping, rpath, options.pname, options.info, options.mapping)
+        map_to_DE(extracted_path, wrap_DE_mapping, rpath, options.pname, options.info, options.mapping)
+    else:
+        wrap_GE = os.path.join(wrappers_dir, "wrapper_GE.R")
+        wrap_DE = os.path.join(wrappers_dir, "wrapper_DE.R")
+        generate_ge_report(extracted_path, wrap_GE, rpath, options.pname, options.info)
+        generate_de_report(extracted_path, wrap_DE, rpath, options.pname, options.info)
+
 def generate_alignment_report(outdir, wrapper, rpath, project_name, info_file):
     """
-    Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file. 
-    
+    Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file.
+
     Output: Alignment report generated and output plots saved in AlignmentFiles
     """
 
@@ -134,8 +171,8 @@ def generate_alignment_report(outdir, wrapper, rpath, project_name, info_file):
 
 def generate_alignment_report_prok(outdir, wrapper, rpath, project_name, info_file):
     """
-    Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file. 
-    
+    Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file.
+
     Output: Prok alignment report generated and output plots saved in AlignmentFiles
     """
 
@@ -162,10 +199,10 @@ def generate_de_report(outdir, wrapper, rpath, project_name, info_file):
         subprocess.check_call([rpath, wrapper, project_name, outdir ,info_file, outdir], shell = False)
     except subprocess.CalledProcessError as e:
         print(e)
-    
+
 def generate_fastqc_report(outdir, wrapper, rpath, project_name, info_file):
     """
-    Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file. 
+    Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file.
 
     Output: FastQC report generate and output files FastQC_Outputs
     """
@@ -183,7 +220,7 @@ def generate_ge_report(outdir, wrapper, rpath, project_name, info_file):
     """
     Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file.
 
-    Output: GE report generate and output files in GE_Outputs 
+    Output: GE report generate and output files in GE_Outputs
     """
 
     output_files = os.path.normpath(outdir + "/GE_Outputs/")
@@ -203,7 +240,7 @@ def map_to_DE(outdir, wrapper, rpath, project_name, info_file, mappingf):
     """
     Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file.
 
-    Output: DE report generate and output files in DE_Outputs 
+    Output: DE report generate and output files in DE_Outputs
     """
 
     output_files = os.path.normpath(outdir + "/DE_Outputs/")
@@ -217,10 +254,9 @@ def map_to_DE(outdir, wrapper, rpath, project_name, info_file, mappingf):
 
 def map_to_GE(outdir, wrapper, rpath, project_name, info_file, mappingf):
     """
-    Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project, path to info file and path to mapping
-           file
+    Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project, path to info file and path to mapping file
 
-    Output: GE report generate and output files in GE_Outputs 
+    Output: GE report generate and output files in GE_Outputs
     """
 
     output_files = os.path.normpath(outdir + "/GE_Outputs/")
@@ -231,6 +267,11 @@ def map_to_GE(outdir, wrapper, rpath, project_name, info_file, mappingf):
         subprocess.check_call([rpath, wrapper, project_name, outdir ,info_file, outdir, mappingf], shell = False)
     except subprocess.CalledProcessError as e:
         print(e)
+
+def update_bag(outdir, project_name):
+    bag_path = os.path.normpath(os.path.join(outdir, project_name))
+    bdbag_api.make_bag(bag_path, update=True)
+    return bdbag_api.archive_bag(bag_path, "zip")
 
 if __name__ == '__main__':
     main()
