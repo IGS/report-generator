@@ -1,5 +1,4 @@
 import sys, os
-import ntpath
 import argparse
 import shutil
 import pandas
@@ -71,12 +70,12 @@ def generate_all_counts(path_to_counts):
     counts_list = [f for f in os.listdir(path_to_counts) if f.endswith('.counts') or f.endswith('.counts.txt')]
     appended_counts_list = prepend(counts_list, path_to_counts) 
     all_counts_merge = pandas.read_csv(appended_counts_list[0], sep="\t", header = None)
-    count_name_0 = ntpath.basename(appended_counts_list[0]).split('.',1)[0]
+    count_name_0 = os.path.basename(appended_counts_list[0]).split('.',1)[0]
     all_counts_merge.rename(columns = {1: count_name_0}, inplace = True)
     print(all_counts_merge.head())
     for i in range(1,len(appended_counts_list)):
         hold_table = pandas.read_csv(appended_counts_list[i], sep="\t", header = None)
-        hold_name = ntpath.basename(appended_counts_list[i]).split('.',1)[0]
+        hold_name = os.path.basename(appended_counts_list[i]).split('.',1)[0]
         hold_table.rename(columns = {1: hold_name}, inplace = True)
         all_counts_merge = pandas.merge(all_counts_merge, hold_table, on = 0)
     all_counts_merge.rename(columns = {0: "ID"}, inplace = True)
