@@ -1,6 +1,7 @@
 import sys, os
 import argparse
 import subprocess
+import pandas
 from bdbag import bdbag_api
 from shutil import copy
 
@@ -113,7 +114,7 @@ def generate_all_counts(path_to_counts):
     """
 
     counts_list = [f for f in os.listdir(path_to_counts) if f.endswith('.counts') or f.endswith('.counts.txt')]
-    appended_counts_list = prepend(counts_list, path_to_counts)
+    appended_counts_list = [os.path.join(path_to_counts, counts_list) for i in counts_list]
     all_counts_merge = pandas.read_csv(appended_counts_list[0], sep="\t", header = None)
     count_name_0 = os.path.basename(appended_counts_list[0]).split('.',1)[0]
     all_counts_merge.rename(columns = {1: count_name_0}, inplace = True)
@@ -207,7 +208,7 @@ def generate_de_report(outdir, wrapper, rpath, project_name, info_file):
         os.makedirs(output_files)
     all_count_path = os.path.normpath(outdir + "/all_counts.txt")
     try:
-        subprocess.check_call([rpath, wrapper, project_name, outdir ,info_file, outdir], shell = False)
+        subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
     except subprocess.CalledProcessError as e:
         print(e)
 
@@ -222,7 +223,7 @@ def generate_fastqc_report(outdir, wrapper, rpath, project_name, info_file):
     if not os.path.exists(output_files):
         os.makedirs(output_files)
     try:
-        subprocess.check_call([rpath, wrapper, project_name, outdir ,info_file, outdir], shell = False)
+        subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
     except subprocess.CalledProcessError as e:
         print(e)
     #syscmd=rpath +" "+ wrap_FQC +" "+ options.pname +" "+ pdir +" " + options.info + " "+pdir
@@ -239,13 +240,15 @@ def generate_ge_report(outdir, wrapper, rpath, project_name, info_file):
     count_file_expected_path = os.path.normpath(outdir + "/Counts/")
     if not os.path.exists(output_files):
         os.makedirs(output_files)
-    if not os.path.exists(all_count_path):
-        merged_counts = generate_all_counts(count_file_expected_path)
-        merged_counts.to_csv(path_or_buf = all_count_path, header = True, sep = "\t", index = False)
-    try:
-        subprocess.check_call([rpath, wrapper, project_name, outdir ,info_file, outdir], shell = False)
-    except subprocess.CalledProcessError as e:
-        print(e)
+    # Ensure counts directory has files in BDBag (AKA the 'htseq' component was in the pipeline)
+    if os.listdir(count_file_expected_path):
+        if not os.path.exists(all_count_path):
+            merged_counts = generate_all_counts(count_file_expected_path)
+            merged_counts.to_csv(path_or_buf = all_count_path, header = True, sep = "\t", index = False)
+        try:
+            subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
+        except subprocess.CalledProcessError as e:
+            print(e)
 
 def map_to_DE(outdir, wrapper, rpath, project_name, info_file, mappingf):
     """
@@ -259,7 +262,7 @@ def map_to_DE(outdir, wrapper, rpath, project_name, info_file, mappingf):
         os.makedirs(output_files)
     all_count_path = os.path.normpath(outdir + "/all_counts.txt")
     try:
-        subprocess.check_call([rpath, wrapper, project_name, outdir ,info_file, outdir, mappingf], shell = False)
+        subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir, mappingf], shell = False)
     except subprocess.CalledProcessError as e:
         print(e)
 
@@ -275,14 +278,13 @@ def map_to_GE(outdir, wrapper, rpath, project_name, info_file, mappingf):
         os.makedirs(output_files)
     all_count_path = os.path.normpath(outdir + "/all_counts.txt")
     try:
-        subprocess.check_call([rpath, wrapper, project_name, outdir ,info_file, outdir, mappingf], shell = False)
+        subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir, mappingf], shell = False)
     except subprocess.CalledProcessError as e:
         print(e)
 
-def update_bag(outdir, project_name):
-    bag_path = os.path.normpath(os.path.join(outdir, project_name))
-    bdbag_api.make_bag(bag_path, update=True)
-    return bdbag_api.archive_bag(bag_path, "zip")
+def update_bag(outdir):
+    bdbag_api.make_bag(outdir, update=True)
+    return bdbag_api.archive_bag(outdir, "zip")
 
 if __name__ == '__main__':
     main()

@@ -22,7 +22,7 @@ def main():
     parser.add_argument("-s", "--sam", dest="sam",help="Pull SAMs into BAG", action='store_true')
     parser.add_argument("-m", "--make", dest="make",help="Make BDBAG", action='store_true')
     args = parser.parse_args()
-    
+
     ergatis_repository = os.path.normpath(args.pdir + "/output_repository/")
 
     #Make output directory with name
@@ -54,12 +54,12 @@ def copy_bam_files():
     pass
 
 def copy_cloud_files(outdir, ergatis_base, ergatis_pid):
-   pass 
+   pass
 
 def copy_files_to_dir(these_files, to_here):
     for i in range(len(these_files)):
         syscmd = "cp "+ these_files[i] + " " + to_here[i]
-        os.system(syscmd) 
+        os.system(syscmd)
 
 def create_bag(output_dir, update):
     """Create/Update and archive a BDBag from the contents of a passed-in directory."""
@@ -68,7 +68,7 @@ def create_bag(output_dir, update):
 
 def generate_all_counts(path_to_counts):
     counts_list = [f for f in os.listdir(path_to_counts) if f.endswith('.counts') or f.endswith('.counts.txt')]
-    appended_counts_list = prepend(counts_list, path_to_counts) 
+    appended_counts_list = prepend(counts_list, path_to_counts)
     all_counts_merge = pandas.read_csv(appended_counts_list[0], sep="\t", header = None)
     count_name_0 = os.path.basename(appended_counts_list[0]).split('.',1)[0]
     all_counts_merge.rename(columns = {1: count_name_0}, inplace = True)
@@ -91,8 +91,8 @@ def generate_all_reports(output_dir, ergatis_repository, ergatis_pid):
 
 def generate_alignment_report(outdir, ergatis_repository, ergatis_pid):
     """
-    Input: path to input and output directory 
-    
+    Input: path to input and output directory
+
     Output: Alignment files copied
     """
     print("Copying Alignment Files")
@@ -106,44 +106,50 @@ def generate_de_report(outdir, ergatis_repository, ergatis_pid):
     de_dir = os.path.normpath(outdir + "/DE/")
     if not os.path.exists(de_dir):
         os.makedirs(de_dir)
-    copy_files_to_dir(de_paths, [de_dir,de_dir])
+    copy_files_to_dir(de_paths, [de_dir for i in de_paths])
     counts_default = os.path.normpath(outdir + "/" +"all_counts.txt")
     counts_de = [f for f in os.listdir(de_dir) if f.endswith('.counts.txt')]
     count_file_de = os.path.normpath(de_dir + "/" + counts_de[0])
     print(count_file_de)
     if not os.path.exists(counts_default):
         print("Copying all counts")
-        shutil.copy(count_file_de , counts_default)  
+        shutil.copy(count_file_de , counts_default)
 
 
 def generate_ge_report(outdir, ergatis_repository, ergatis_pid):
     """
-    Input: path to input and output directory 
-    
+    Input: path to input and output directory
+
     Output: GE files copied
     """
     print("In GE")
-    ge_paths = [os.path.normpath(ergatis_repository + "/rpkm_coverage_stats/" + ergatis_pid + "_rpkm_cvg/i1/g*/genic_coverage/*.txt") , os.path.normpath(ergatis_repository + "/htseq/" + ergatis_pid + "*_counts/i1/g*/*.counts")]    
+    ge_paths = [os.path.normpath(ergatis_repository + "/rpkm_coverage_stats/" + ergatis_pid + "_rpkm_cvg/i1/g*/genic_coverage/*.txt") , os.path.normpath(ergatis_repository + "/htseq/" + ergatis_pid + "*_counts/i1/g*/*.counts")]
     print(ge_paths)
     ge_dir = ["/RPKM/","/Counts/"]
     ge_full_paths = prepend(ge_dir, outdir)
     print(ge_full_paths)
     makedir(ge_full_paths)
     copy_files_to_dir(ge_paths, ge_full_paths)
-    all_counts = generate_all_counts( ge_full_paths[1])    
-    counts_out = os.path.normpath(outdir + "/" +"all_counts.txt")
-    all_counts.to_csv(path_or_buf = counts_out, header = True, sep = "\t", index = False)
+
+    # SAdkins Note - I would rather not include a RPKM or Counts output directory if that component was not run, but for now
+    # this component will create the output directories and report_generator.py will check if empty or not.
+
+    # Copy counts only if these files exist
+    if os.path.isdir(ge_paths[1]):
+        all_counts = generate_all_counts( ge_full_paths[1])
+        counts_out = os.path.normpath(outdir + "/" +"all_counts.txt")
+        all_counts.to_csv(path_or_buf = counts_out, header = True, sep = "\t", index = False)
 
 def generate_fastqc_report(outdir, ergatis_repository, ergatis_pid):
     """
-    Input: path to input and output directory 
-    
+    Input: path to input and output directory
+
     Output: Path and Name to FastQC report
     """
     fqc_path = os.path.normpath(ergatis_repository + "/fastqc_stats/" + ergatis_pid + "_fastqc/i1/g*/*/Images/")
     print("Staring Directory Setup")
 
-    dir_list = ["/FastQC_Files", "/FastQC_Files/KmerProfiles", "/FastQC_Files/BaseQuality", "/FastQC_Files/adapter_content", "/FastQC_Files/duplication_levels", "/FastQC_Files/per_base_n_content", "/FastQC_Files/per_base_sequence_content", "/FastQC_Files/per_sequence_gc_content", "/FastQC_Files/per_sequence_quality", "/FastQC_Files/per_tile_quality", "/FastQC_Files/sequence_length_distribution"] 
+    dir_list = ["/FastQC_Files", "/FastQC_Files/KmerProfiles", "/FastQC_Files/BaseQuality", "/FastQC_Files/adapter_content", "/FastQC_Files/duplication_levels", "/FastQC_Files/per_base_n_content", "/FastQC_Files/per_base_sequence_content", "/FastQC_Files/per_sequence_gc_content", "/FastQC_Files/per_sequence_quality", "/FastQC_Files/per_tile_quality", "/FastQC_Files/sequence_length_distribution"]
 
     extension_list = ["/*_sequence.kmer_profiles.png", "/*_base_quality.png", "/*_sequence.adapter_content.png", "/*_sequence.duplication_levels.png", "/*_sequence.per_base_n_content.png", "/*_sequence.per_base_sequence_content.png", "/*_sequence.per_sequence_gc_content.png", "/*_sequence.per_sequence_quality.png", "/*_sequence.per_tile_quality.png", "/*_sequence.sequence_length_distribution.png"]
 
@@ -152,30 +158,28 @@ def generate_fastqc_report(outdir, ergatis_repository, ergatis_pid):
     appended_dir_list = prepend(dir_list, outdir)
     appended_copy_to = prepend(copy_to, outdir)
     appended_to_be_copied = prepend(extension_list, fqc_path)
-    makedir(appended_dir_list) 
+    makedir(appended_dir_list)
     copy_files_to_dir(appended_to_be_copied, appended_copy_to)
-        
+
 
 def makedir(pathlist):
     """
-    Input: List of FULL Paths to be made if they dont exist 
-    
+    Input: List of FULL Paths to be made if they dont exist
+
     Output: Confirmation if the paths were made
     """
     for path in pathlist:
         if not os.path.exists(path):
             os.makedirs(path)
-    return ""
-    
-def prepend(list, str):
+    return True
+
+def prepend(files, dirpath):
     """
     Input: List of files in the input directory and path to input directory
 
     Output: List of full paths to log files in input directory
     """
-    str += '{0}'
-    list = [str.format(i) for i in list]
-    return(list)
+    return [os.path.join(dirpath, i) for i in files]
 
 if __name__ == '__main__':
     main()
