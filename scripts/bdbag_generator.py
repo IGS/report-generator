@@ -82,7 +82,7 @@ def generate_all_counts(path_to_counts):
     print(all_counts_merge.head())
     return(all_counts_merge)
 
-def generate_all_reports(outdir, ergatis_repository, ergatis_pid):
+def generate_all_reports(output_dir, ergatis_repository, ergatis_pid):
     """Generate all possible reports."""
     only_fqc = generate_fastqc_report(output_dir, ergatis_repository, ergatis_pid)
     only_aln = generate_alignment_report(output_dir, ergatis_repository, ergatis_pid)
