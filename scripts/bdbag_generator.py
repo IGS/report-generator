@@ -108,7 +108,7 @@ def generate_de_report(outdir, ergatis_repository, ergatis_pid):
         os.makedirs(de_dir)
     copy_files_to_dir(de_paths, [de_dir for i in de_paths])
     counts_default = os.path.normpath(outdir + "/" +"all_counts.txt")
-    de_counts_path = os.path.normpath(ergatis_repository + "/deseq/"+ ergatis_pid + "_differential_expression/i1/g*/all_counts_noZero_normalized")
+    de_counts_path = os.path.normpath(ergatis_repository + "/deseq/"+ ergatis_pid + "_differential_expression/i1/g*/all_counts")
     print(de_counts_path)
     ###Find better way to copy the DE normalized counts file. Temp fix.
     de_syscmd = "cp "+ de_counts_path + " " + counts_default
