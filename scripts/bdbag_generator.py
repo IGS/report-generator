@@ -171,15 +171,26 @@ def makedir(pathlist):
     for path in pathlist:
         if not os.path.exists(path):
             os.makedirs(path)
-    return True
+    return ""
 
-def prepend(files, dirpath):
+
+def prepend(list, str): 
     """
     Input: List of files in the input directory and path to input directory
-
+    
     Output: List of full paths to log files in input directory
     """
-    return [os.path.join(dirpath, i) for i in files]
+    str += '{0}'
+    list = [str.format(i) for i in list]
+    return(list)
+
+#def prepend(files, dirpath):
+ #   """
+  #  Input: List of files in the input directory and path to input directory
+#
+ #   Output: List of full paths to log files in input directory
+  #  """
+   # return [os.path.join(dirpath, i) for i in files]
 
 if __name__ == '__main__':
     main()
