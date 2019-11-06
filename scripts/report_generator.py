@@ -25,7 +25,7 @@ def main():
     parser.add_argument("-d", "--dewrapper", dest="dwrap",help="Path to DE wrapper script", metavar="PATH")
     parser.add_argument("-g", "--gewrapper", dest="gwrap",help="Path to GE wrapper script", metavar="PATH")
 
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
     #wrap_FQC="/usr/local/packages/report_generation/wrapper_FastQC.R"
     if options.fwrap:
         wrap_FQC=options.fwrap
