@@ -109,7 +109,8 @@ def generate_de_report(outdir, ergatis_repository, ergatis_pid):
     copy_files_to_dir(de_paths, [de_dir for i in de_paths])
     counts_default = os.path.normpath(outdir + "/" +"all_counts.txt")
     counts_de = [f for f in os.listdir(de_dir) if f == 'counts_noZero_normalized']
-    count_file_de = os.path.normpath(de_dir + "/" + counts_de[0])
+    print(counts_de)
+    count_file_de = os.path.normpath(de_dir + "/" + counts_de)
     print(count_file_de)
     if not os.path.exists(counts_default):
         print("Copying all counts")
