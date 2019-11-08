@@ -95,23 +95,31 @@ def generate_alignment_report(outdir, ergatis_repository, ergatis_pid):
 
     Output: Alignment files copied
     """
+    # Remove redundant references and separators in path, if applicable
+    outdir = os.path.normpath(outdir)
+    ergatis_repository = os.path.normpath(ergatis_repository)
+
     print("Copying Alignment Files")
-    aln_path = os.path.normpath(ergatis_repository + "/wrapper_align/" + ergatis_pid +"_wrap/Summary.txt")
+    aln_path = os.path.join(ergatis_repository, "wrapper_align", ergatis_pid +"_wrap/Summary.txt")
     syscmd = "cp " + aln_path + " " + outdir
     print(syscmd)
     os.system(syscmd)
 
 def generate_de_report(outdir, ergatis_repository, ergatis_pid):
-    de_paths = [os.path.normpath(ergatis_repository + "/deseq/" + ergatis_pid + "_differential_expression/i1/g*/*.counts.txt"), os.path.normpath(ergatis_repository + "/deseq/"+ ergatis_pid + "_differential_expression/i1/g*/*de_genes.txt")]
-    de_dir = os.path.normpath(outdir + "/DE/")
-    if not os.path.exists(de_dir):
+    # Remove redundant references and separators in path, if applicable
+    outdir = os.path.normpath(outdir)
+    ergatis_repository = os.path.normpath(ergatis_repository)
+
+    de_paths = [os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/*.counts.txt"), os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/*de_genes.txt")]
+    de_dir = os.path.join(outdir, "DE")
+    if not os.path.isdir(de_dir):
         os.makedirs(de_dir)
     copy_files_to_dir(de_paths, [de_dir for i in de_paths])
-    counts_default = os.path.normpath(outdir + "/" +"all_counts.txt")
+    counts_default = os.path.join(outdir, "all_counts.txt")
     counts_de = [f for f in os.listdir(de_dir) if f.endswith('.counts.txt')]
-    count_file_de = os.path.normpath(de_dir + "/" + counts_de[0])
+    count_file_de = os.path.join(de_dir, counts_de[0])
     print(count_file_de)
-    if not os.path.exists(counts_default):
+    if not os.path.isfile(counts_default):
         print("Copying all counts")
         shutil.copy(count_file_de , counts_default)
 
@@ -122,10 +130,14 @@ def generate_ge_report(outdir, ergatis_repository, ergatis_pid):
 
     Output: GE files copied
     """
+    # Remove redundant references and separators in path, if applicable
+    outdir = os.path.normpath(outdir)
+    ergatis_repository = os.path.normpath(ergatis_repository)
+
     print("In GE")
-    ge_paths = [os.path.normpath(ergatis_repository + "/rpkm_coverage_stats/" + ergatis_pid + "_rpkm_cvg/i1/g*/genic_coverage/*.txt") , os.path.normpath(ergatis_repository + "/htseq/" + ergatis_pid + "*_counts/i1/g*/*.counts")]
+    ge_paths = [os.path.join(ergatis_repository, "rpkm_coverage_stats", ergatis_pid + "_rpkm_cvg/i1/g*/genic_coverage/*.txt"), os.path.join(ergatis_repository, "htseq", ergatis_pid + "*_counts/i1/g*/*.counts")]
     print(ge_paths)
-    ge_dir = ["/RPKM/","/Counts/"]
+    ge_dir = ["RPKM","Counts"]
     ge_full_paths = prepend(ge_dir, outdir)
     print(ge_full_paths)
     makedir(ge_full_paths)
@@ -137,7 +149,7 @@ def generate_ge_report(outdir, ergatis_repository, ergatis_pid):
     # Copy counts only if these files exist
     if os.path.isdir(ge_paths[1]):
         all_counts = generate_all_counts( ge_full_paths[1])
-        counts_out = os.path.normpath(outdir + "/" +"all_counts.txt")
+        counts_out = os.path.join(outdir, "all_counts.txt")
         all_counts.to_csv(path_or_buf = counts_out, header = True, sep = "\t", index = False)
 
 def generate_fastqc_report(outdir, ergatis_repository, ergatis_pid):
@@ -146,14 +158,18 @@ def generate_fastqc_report(outdir, ergatis_repository, ergatis_pid):
 
     Output: Path and Name to FastQC report
     """
-    fqc_path = os.path.normpath(ergatis_repository + "/fastqc_stats/" + ergatis_pid + "_fastqc/i1/g*/*/Images/")
+    # Remove redundant references and separators in path, if applicable
+    outdir = os.path.normpath(outdir)
+    ergatis_repository = os.path.normpath(ergatis_repository)
+
+    fqc_path = os.path.join(ergatis_repository, "/fastqc_stats/", ergatis_pid, "_fastqc/i1/g*/*/Images/")
     print("Staring Directory Setup")
 
-    dir_list = ["/FastQC_Files", "/FastQC_Files/KmerProfiles", "/FastQC_Files/BaseQuality", "/FastQC_Files/adapter_content", "/FastQC_Files/duplication_levels", "/FastQC_Files/per_base_n_content", "/FastQC_Files/per_base_sequence_content", "/FastQC_Files/per_sequence_gc_content", "/FastQC_Files/per_sequence_quality", "/FastQC_Files/per_tile_quality", "/FastQC_Files/sequence_length_distribution"]
+    dir_list = ["FastQC_Files", "FastQC_Files/KmerProfiles", "FastQC_Files/BaseQuality", "FastQC_Files/adapter_content", "FastQC_Files/duplication_levels", "FastQC_Files/per_base_n_content", "FastQC_Files/per_base_sequence_content", "FastQC_Files/per_sequence_gc_content", "FastQC_Files/per_sequence_quality", "FastQC_Files/per_tile_quality", "FastQC_Files/sequence_length_distribution"]
 
-    extension_list = ["/*_sequence.kmer_profiles.png", "/*_base_quality.png", "/*_sequence.adapter_content.png", "/*_sequence.duplication_levels.png", "/*_sequence.per_base_n_content.png", "/*_sequence.per_base_sequence_content.png", "/*_sequence.per_sequence_gc_content.png", "/*_sequence.per_sequence_quality.png", "/*_sequence.per_tile_quality.png", "/*_sequence.sequence_length_distribution.png"]
+    extension_list = ["*_sequence.kmer_profiles.png", "*_base_quality.png", "*_sequence.adapter_content.png", "*_sequence.duplication_levels.png", "*_sequence.per_base_n_content.png", "*_sequence.per_base_sequence_content.png", "*_sequence.per_sequence_gc_content.png", "*_sequence.per_sequence_quality.png", "*_sequence.per_tile_quality.png", "*_sequence.sequence_length_distribution.png"]
 
-    copy_to = ["/FastQC_Files/KmerProfiles", "/FastQC_Files/BaseQuality", "/FastQC_Files/adapter_content", "/FastQC_Files/duplication_levels", "/FastQC_Files/per_base_n_content", "/FastQC_Files/per_base_sequence_content", "/FastQC_Files/per_sequence_gc_content", "/FastQC_Files/per_sequence_quality", "/FastQC_Files/per_tile_quality", "/FastQC_Files/sequence_length_distribution"]
+    copy_to = ["FastQC_Files/KmerProfiles", "FastQC_Files/BaseQuality", "FastQC_Files/adapter_content", "FastQC_Files/duplication_levels", "FastQC_Files/per_base_n_content", "FastQC_Files/per_base_sequence_content", "FastQC_Files/per_sequence_gc_content", "FastQC_Files/per_sequence_quality", "FastQC_Files/per_tile_quality", "FastQC_Files/sequence_length_distribution"]
 
     appended_dir_list = prepend(dir_list, outdir)
     appended_copy_to = prepend(copy_to, outdir)
@@ -169,7 +185,7 @@ def makedir(pathlist):
     Output: Confirmation if the paths were made
     """
     for path in pathlist:
-        if not os.path.exists(path):
+        if not os.path.isdir(path):
             os.makedirs(path)
     return True
 
