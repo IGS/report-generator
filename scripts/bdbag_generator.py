@@ -115,13 +115,13 @@ def generate_de_report(outdir, ergatis_repository, ergatis_pid):
     if not os.path.isdir(de_dir):
         os.makedirs(de_dir)
     copy_files_to_dir(de_paths, [de_dir for i in de_paths])
+
     counts_default = os.path.join(outdir, "all_counts.txt")
-    counts_de = [f for f in os.listdir(de_dir) if f.endswith('.counts.txt')]
-    count_file_de = os.path.join(de_dir, counts_de[0])
-    print(count_file_de)
-    if not os.path.isfile(counts_default):
-        print("Copying all counts")
-        shutil.copy(count_file_de , counts_default)
+    de_counts_path = os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/all_counts")
+    print(de_counts_path)
+    ###Find better way to copy the DE normalized counts file. Temp fix.
+    de_syscmd = "cp "+ de_counts_path + " " + counts_default
+    os.system(de_syscmd)
 
 
 def generate_ge_report(outdir, ergatis_repository, ergatis_pid):
@@ -187,9 +187,10 @@ def makedir(pathlist):
     for path in pathlist:
         if not os.path.isdir(path):
             os.makedirs(path)
-    return True
+    return ""
 
-def prepend(files, dirpath):
+
+def prepend(list, str):
     """
     Input: List of files in the input directory and path to input directory
 

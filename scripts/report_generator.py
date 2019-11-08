@@ -10,13 +10,13 @@ def main():
     parser.add_argument("-b", "--bdbag", dest="bdbag",help="Path to bdbag archive", metavar="BDBAG")
     parser.add_argument("-o", "--outdir", dest="outdir",help="Path to Output directory", metavar="PATH")
     parser.add_argument("-n", "--name", dest="pname",help="Name of Project must match that when generating bag", metavar="NAME")
-    parser.add_argument("-1", "--fastqc", dest="fqc",help="Make fastQC Report", metavar="FQC", action='store_true')
-    parser.add_argument("-2", "--align", dest="aln",help="Make Alignment Report", metavar="ALN", action='store_true')
-    parser.add_argument("-3", "--ge", dest="ge",help="Make GE Report", metavar="GE", action='store_true')
-    parser.add_argument("-4", "--de", dest="de",help="Make DE Report", metavar="DE", action='store_true')
-    parser.add_argument("-a", "--all", dest="all",help="Make All Reports", metavar="ALL", action='store_true')
-    parser.add_argument("-p", "--prok", dest="prok",help="Make Prok Reports", metavar="PROK", action='store_true')
-    parser.add_argument("-u", "--update", dest="update",help="Update BdBag", metavar="Update", action='store_true')
+    parser.add_argument("-1", "--fastqc", dest="fqc",help="Make fastQC Report", action='store_true')
+    parser.add_argument("-2", "--align", dest="aln",help="Make Alignment Report", action='store_true')
+    parser.add_argument("-3", "--ge", dest="ge",help="Make GE Report", action='store_true')
+    parser.add_argument("-4", "--de", dest="de",help="Make DE Report", action='store_true')
+    parser.add_argument("-a", "--all", dest="all",help="Make All Reports", action='store_true')
+    parser.add_argument("-p", "--prok", dest="prok",help="Make Prok Reports", action='store_true')
+    parser.add_argument("-u", "--update", dest="update",help="Update BdBag", action='store_true')
     parser.add_argument("-i", "--info", dest="info",help="Path to Info file", metavar="PATH")
     parser.add_argument("-m", "--mapping", dest="mapping",help="Path to mapping file", metavar="PATH")
 
@@ -25,30 +25,30 @@ def main():
     parser.add_argument("-d", "--dewrapper", dest="dwrap",help="Path to DE wrapper script", metavar="PATH")
     parser.add_argument("-g", "--gewrapper", dest="gwrap",help="Path to GE wrapper script", metavar="PATH")
 
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
     #wrap_FQC="/usr/local/packages/report_generation/wrapper_FastQC.R"
-    if options.fwrap:
-        wrap_FQC=options.fwrap
+    if args.fwrap:
+        wrap_FQC=args.fwrap
     else:
         wrap_FQC="/home/apaala.chatterjee/RNA_Report/wrapper_FastQC.R"
 
-    if options.awrap:
-        wrap_ALN = options.awrap
-    elif not options.awrap and options.prok:
+    if args.awrap:
+        wrap_ALN = args.awrap
+    elif not args.awrap and args.prok:
         wrap_ALN = "/home/apaala.chatterjee/RNA_Report/wrapper_Alignment_prok.R"
     else:
         wrap_ALN = "/home/apaala.chatterjee/RNA_Report/wrapper_Alignment.R"
 
-    if options.gwrap:
-        wrap_GE = options.gwrap
-    elif not options.gwrap and options.mapping:
+    if args.gwrap:
+        wrap_GE = args.gwrap
+    elif not args.gwrap and args.mapping:
         wrap_GE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_GE_mapping.R"
     else:
         wrap_GE="/home/apaala.chatterjee/RNA_Report/wrapper_GE.R"
 
-    if options.dwrap:
-        wrap_DE = options.dwrap
-    elif not options.dwrap and options.mapping:
+    if args.dwrap:
+        wrap_DE = args.dwrap
+    elif not args.dwrap and args.mapping:
         wrap_DE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_DE_mapping.R"
     else:
         wrap_DE="/home/apaala.chatterjee/RNA_Report/wrapper_DE.R"
@@ -62,36 +62,36 @@ def main():
     counts_script="/usr/local/packages/report_generation/Generate_all_counts.R"
     rpath="/usr/local/packages/r-3.4.0/bin/Rscript"
 
-    if options.bdbag and options.outdir and options.pname:
-        extracted_path = extract_bag(options.bdbag, output_directory=options.outdir, project_name=options.pname)
-        copy(options.info, extracted_path)
+    if args.bdbag and args.outdir and args.pname:
+        extracted_path = extract_bag(args.bdbag, output_directory=args.outdir, project_name=args.pname)
+        copy(args.info, extracted_path)
 
-        if options.all:
+        if args.all:
             wrap_dir = os.path.dirname(wrap_DE)
-            generate_all_reports(extracted_path, wrap_dir, rpath, options.pname, options.info, options.prok, options.mapping, options)
+            generate_all_reports(extracted_path, wrap_dir, rpath, args.pname, args.info, args.prok, args.mapping, args)
         else:
-            if options.fqc:
-                generate_fastqc_report(extracted_path, wrap_FQC, rpath, options.pname, options.info)
+            if args.fqc:
+                generate_fastqc_report(extracted_path, wrap_FQC, rpath, args.pname, args.info)
 
-            if options.aln:
-                generate_alignment_report(extracted_path, wrap_ALN, rpath, options.pname, options.info)
+            if args.aln:
+                generate_alignment_report(extracted_path, wrap_ALN, rpath, args.pname, args.info)
 
-            if options.ge:
-                if options.mapping:
+            if args.ge:
+                if args.mapping:
                     print("In mapping file GE")
-                    map_to_GE(extracted_path, wrap_GE_mapping, rpath, options.pname, options.info, options.mapping)
+                    map_to_GE(extracted_path, wrap_GE_mapping, rpath, args.pname, args.info, args.mapping)
                 else:
-                    generate_ge_report(extracted_path, wrap_GE, rpath, options.pname, options.info)
+                    generate_ge_report(extracted_path, wrap_GE, rpath, args.pname, args.info)
 
-            if options.de:
-                if options.mapping:
+            if args.de:
+                if args.mapping:
                     print("In mapping file DE")
-                    map_to_DE(extracted_path, wrap_DE_mapping, rpath, options.pname, options.info, options.mapping)
+                    map_to_DE(extracted_path, wrap_DE_mapping, rpath, args.pname, args.info, args.mapping)
                 else:
-                    generate_de_report(extracted_path, wrap_DE, rpath, options.pname, options.info)
+                    generate_de_report(extracted_path, wrap_DE, rpath, args.pname, args.info)
 
-        if(options.update):
-            update_bag(options.outdir, project_name=options.pname)
+        if(args.update):
+            update_bag(args.outdir, project_name=args.pname)
 
 def extract_bag(bdbag_zip_path, output_directory=None, project_name=None):
     """Extract BDBag contents into named output directory in original BDBag location."""
@@ -128,20 +128,20 @@ def generate_all_counts(path_to_counts):
     print(all_counts_merge.head())
     return(all_counts_merge)
 
-def generate_all_reports(outdir, wrappers_dir, rpath, project_name, info_file, prok, mapping_file, opts=None):
+def generate_all_reports(outdir, wrappers_dir, rpath, project_name, info_file, prok, mapping_file, args=None):
     """Generate all possible reports.  Assumes all wrapper scripts are in the same directory."""
 
     wrap_FQC = os.path.join(wrappers_dir, "wrapper_FastQC.R")
     if opts.fwrap:
         wrap_FQC = opts.fwrap
-    generate_fastqc_report(extracted_path, wrap_FQC, rpath, options.pname, options.info)
+    generate_fastqc_report(extracted_path, wrap_FQC, rpath, args.pname, args.info)
 
     wrap_ALN = os.path.join(wrappers_dir, "wrapper_Alignment.R")
     if prok:
         wrap_ALN_prok = os.path.join(wrappers_dir, "wrapper_Alignment_prok.R")
     if opts.awrap:
         wrap_ALN = opts.awrap
-    generate_alignment_report(extracted_path, wrap_ALN, rpath, options.pname, options.info)
+    generate_alignment_report(extracted_path, wrap_ALN, rpath, args.pname, args.info)
 
     if mapping_file:
         wrap_GE_mapping = os.path.join(wrappers_dir, "wrapper_GE_mapping.R")
@@ -150,8 +150,8 @@ def generate_all_reports(outdir, wrappers_dir, rpath, project_name, info_file, p
             wrap_GE_mapping = opts.gwrap
         if opts.dwrap:
             wrap_DE_mapping = opts.dwrap
-        map_to_GE(extracted_path, wrap_GE_mapping, rpath, options.pname, options.info, options.mapping)
-        map_to_DE(extracted_path, wrap_DE_mapping, rpath, options.pname, options.info, options.mapping)
+        map_to_GE(extracted_path, wrap_GE_mapping, rpath, args.pname, args.info, args.mapping)
+        map_to_DE(extracted_path, wrap_DE_mapping, rpath, args.pname, args.info, args.mapping)
     else:
         wrap_GE = os.path.join(wrappers_dir, "wrapper_GE.R")
         wrap_DE = os.path.join(wrappers_dir, "wrapper_DE.R")
@@ -159,8 +159,8 @@ def generate_all_reports(outdir, wrappers_dir, rpath, project_name, info_file, p
             wrap_GE = opts.gwrap
         if opts.dwrap:
             wrap_DE = opts.dwrap
-        generate_ge_report(extracted_path, wrap_GE, rpath, options.pname, options.info)
-        generate_de_report(extracted_path, wrap_DE, rpath, options.pname, options.info)
+        generate_ge_report(extracted_path, wrap_GE, rpath, args.pname, args.info)
+        generate_de_report(extracted_path, wrap_DE, rpath, args.pname, args.info)
 
 def generate_alignment_report(outdir, wrapper, rpath, project_name, info_file):
     """
@@ -208,7 +208,7 @@ def generate_fastqc_report(outdir, wrapper, rpath, project_name, info_file):
         subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
     except subprocess.CalledProcessError as e:
         print(e)
-    #syscmd=rpath +" "+ wrap_FQC +" "+ options.pname +" "+ pdir +" " + options.info + " "+pdir
+    #syscmd=rpath +" "+ wrap_FQC +" "+ args.pname +" "+ pdir +" " + args.info + " "+pdir
 
 def generate_ge_report(outdir, wrapper, rpath, project_name, info_file):
     """
