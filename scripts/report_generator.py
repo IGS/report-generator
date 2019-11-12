@@ -91,7 +91,9 @@ def main():
                     generate_de_report(extracted_path, wrap_DE, rpath, args.pname, args.info)
 
         if(args.update):
-            update_bag(args.outdir, project_name=args.pname)
+            project_outdir=os.path.join(args.outdir,args.pname)
+            bdbag_api.make_bag(project_outdir, update=True)
+            bdbag_api.archive_bag(project_outdir, "zip")
 
 def extract_bag(bdbag_zip_path, output_directory=None, project_name=None):
     """Extract BDBag contents into named output directory in original BDBag location."""
