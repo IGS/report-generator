@@ -92,8 +92,9 @@ def main():
 
         if(args.update):
             project_outdir=os.path.join(args.outdir,args.pname)
-            bdbag_api.make_bag(project_outdir, update=True)
-            bdbag_api.archive_bag(project_outdir, "zip")
+            update_bag(project_outdir)
+            #bdbag_api.make_bag(project_outdir, update=True)
+            #bdbag_api.archive_bag(project_outdir, "zip")
 
 def extract_bag(bdbag_zip_path, output_directory=None, project_name=None):
     """Extract BDBag contents into named output directory in original BDBag location."""
