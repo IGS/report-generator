@@ -4,6 +4,7 @@ import shutil
 import pandas
 from bdbag import bdbag_api
 import bagit
+import glob
 
 def main():
     parser = argparse.ArgumentParser( description='BDBag Generator for Report Generation Tool')
@@ -135,11 +136,13 @@ def generate_ge_report(outdir, ergatis_repository, ergatis_pid):
     ergatis_repository = os.path.normpath(ergatis_repository)
 
     print("In GE")
+    de_counts_path = os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/all_counts")
+    counts_default = os.path.join(outdir, "all_counts.txt")
     ge_paths = [os.path.join(ergatis_repository, "rpkm_coverage_stats", ergatis_pid + "_rpkm_cvg/i1/g*/genic_coverage/*.txt"), os.path.join(ergatis_repository, "htseq", ergatis_pid + "*_counts/i1/g*/*.counts")]
-    print(ge_paths)
+    print(de_counts_path)
     ge_dir = ["RPKM","Counts"]
     ge_full_paths = prepend(ge_dir, outdir)
-    print(ge_full_paths)
+    #print(ge_full_paths)
     makedir(ge_full_paths)
     copy_files_to_dir(ge_paths, ge_full_paths)
 
@@ -147,7 +150,14 @@ def generate_ge_report(outdir, ergatis_repository, ergatis_pid):
     # this component will create the output directories and report_generator.py will check if empty or not.
 
     # Copy counts only if these files exist
-    if os.path.isdir(ge_paths[1]):
+    if glob.glob(de_counts_path):
+        print("Using the DE Counts file found at: ", glob.glob(de_counts_path))
+        ###Find better way to copy the DE normalized counts file. Temp fix.
+        de_syscmd = "cp "+ de_counts_path + " " + counts_default
+        os.system(de_syscmd)
+    elif os.path.isdir(ge_paths[1]) and not os.path.isfile(de_counts_path):
+        print("Copying htseq counts as de counts file was not found")
+        print("Generating all counts from htseq files")
         all_counts = generate_all_counts( ge_full_paths[1])
         counts_out = os.path.join(outdir, "all_counts.txt")
         all_counts.to_csv(path_or_buf = counts_out, header = True, sep = "\t", index = False)
