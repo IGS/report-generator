@@ -102,7 +102,7 @@ match_IDs<-function(from_counts, from_info){
 
 ```{r table, echo=FALSE, warning=FALSE, fig.show='hide', message = FALSE}
 DEpath<-paste0(path, "/DE/")
-DECountPath<-paste0(path, "/Counts/")
+DECountPath<-paste0(path, "/DE/")
 DeFiles<-list.files(DEpath, pattern = "de_genes.txt", full.names = TRUE)
 table_DE<-data.frame()
 comp_names<-(basename(DeFiles))
@@ -234,14 +234,12 @@ ggsave(maPlot, file=paste0(i,"_MA_images.png"), width = 13, height = 4, path=DEO
 ```{r DEHeatmaps, echo=FALSE, warning=FALSE, fig.show='hide', message = FALSE}
 myinfo <- data.frame(read.table(infofile, check.names=FALSE, sep="\t", as.is = TRUE), check.names=FALSE)
 comparision_list<-list()
-normal<-paste0(GEPathD, "logCPM_count_normalized.txt")
-if(file.exists(normal)==TRUE)
-{
-my_adjusted_log<-data.frame(read.table(normal, check.names = FALSE), check.names = FALSE)
-plot_list = list()
+#normal<-paste0(GEPathD, "logCPM_count_normalized.txt")
+DEcounts<-list.files(DECountPath, pattern = ".counts$", full.names = TRUE)
 for(i in 1: length(DeFiles))
 {
   DEInf<-read.table(DeFiles[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
+  DECnts<-read.table(DEcounts[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(DEInf)[6]<-"LFC"
   DEInf<-DEInf[DEInf$FDR<FDRc, ]
   DEInf<-DEInf[DEInf$LFC >LFCc | DEInf$LFC< -LFCc, ]
@@ -249,203 +247,77 @@ for(i in 1: length(DeFiles))
   p10comp<-(nrow(DEInf)*10)/100
   p10compdf<-DEInf[0:p10comp,]
   if(nrow(p10compdf)>1){
-    cutoff<-mean(range(p10compdf$Read.Count.All), na.rm=T)
-  } else{
+    cutoff<-mean(range(p10compdf$Read.Count.All))
+  }else {
     cutoff<-mean(range(DEInf$Read.Count.All))
   }
-  #cutoff<-mean(range(p10compdf$Read.Count.All))
+
   DEInf<-DEInf[DEInf$Read.Count.All > cutoff, ]
   DEnoInf<-DEInf
-if(nrow(DEnoInf)>=2)
-{
-#Replacing INF
-columnI <- DEnoInf$LFC[which(!is.na(DEnoInf$LFC))]
-columni <- columnI[which(columnI < Inf)]
-posINF<-max(columni, na.rm = T)
-columni <- columnI[which(columnI > -Inf)]
-negINF<-min(columni, na.rm = T)
-
+  
+  if(nrow(DEnoInf)>=2)
+  {
+  columnI <- DEnoInf$LFC[which(!is.na(DEnoInf$LFC))]
+  columni <- columnI[which(columnI < Inf)]
+  posINF<-max(columni,na.rm = T)
+  columni <- columnI[which(columnI > -Inf)]
+  negINF<-min(columni,na.rm = T)
   DEnoInf$LFC[DEnoInf$LFC=="-Inf"]<-negINF
   DEnoInf$LFC[DEnoInf$LFC=="Inf"]<-posINF
-  
   Hmap_LFC<-data.frame(DEnoInf$Feature.ID, DEnoInf$LFC)
   Hmap_LFC<-Hmap_LFC[order(Hmap_LFC$DEnoInf.LFC, decreasing = TRUE), ]
-  t1_comp<-names(DEInf)[3]
-  t2_comp<-names(DEInf)[4]
+  t1_comp<-names(DEnoInf)[3]
+  t2_comp<-names(DEnoInf)[4]
   comp_list<-list()
   t1_comp<-gsub("Read.Count.", "", t1_comp)
   t2_comp<-gsub("Read.Count.", "", t2_comp)
   comp_list<-append(comp_list, t1_comp)
   comp_list<-append(comp_list, t2_comp)
   comp_list<-unlist(comp_list)
-  degenes_list<-DEInf$Feature.ID
+  degenes_list<-DEnoInf$Feature.ID #DEInf used in normal=T
   comp_samples<-data.frame(subset(myinfo, myinfo$V2 %in%comp_list), check.names=FALSE)
   comp_sampleList<- unlist(comp_samples$V1)
-  Filtered_norm<-subset(my_adjusted_log, rownames(my_adjusted_log) %in% degenes_list, check.names=FALSE)
-  Filtered_Sample_list<-which(colnames(Filtered_norm) %in% comp_sampleList)
-  Filtered_Sample<-Filtered_norm[, c(Filtered_Sample_list)]
-  Filtered_Sample<-Filtered_Sample[,order(colnames(Filtered_Sample))]
-  Filtered_Sample<-Filtered_Sample[order(rowMeans(Filtered_Sample), decreasing = TRUE), ]
+  ##Same Till here
   
-  ####Levels issue fix
+  #DECnts_samples<-data.frame(subset(DECnts, colnames(DECnts[2:21]) %in% comp_sampleList), check.names=F)
+  DECnts_samples<-DECnts
+  rownames(DECnts_samples)<-DECnts_samples$ID
+  DECnts_samples$ID<-NULL
+  #Remove all rowsums with 0
+  DECnts_no0<-data.frame(DECnts_samples[rowSums(DECnts_samples)!=0, ], check.names = FALSE)
+  #Replace 0 with 1
+  DECnts_no0[DECnts_no0==0]<-1
+  DECnts_samples<-DECnts_no0
+  Filtered_norm<-subset(DECnts_samples, rownames(DECnts_samples) %in% degenes_list, check.names=FALSE)
+  if(length(Filtered_norm)>=2){
   comp_sampleList<-comp_samples[order(comp_samples$V1),]
   heatmp_a<-data.frame(factor(comp_sampleList$V2))
-  colass<-unlist(unique(heatmp_a))
-  colnames(heatmp_a)<-"Group"
+  colass<-unlist(unique(heatmp_a)) #Remove- maybe Unnecessary
+  colnames(heatmp_a)<-"Group"   
   levels(heatmp_a)=levels(heatmp_a$Group)
+  #levels(heatmp_a)<-heatmp_a
   l1<-levels(heatmp_a$Group)[1]
   l2<-levels(heatmp_a$Group)[2]
-  df=data.frame(heatmp_a=heatmp_a)
+  df=data.frame(heatmp_a=heatmp_a)      
   string_command<-paste0('HeatmapAnnotation(df, annotation_legend_param = list(title="Condition", title_gp = gpar(fontsize = 10, fontface=2, fontfamily="Helvetica")), col=list(Group=c(',l1,'="darkgreen",', l2, '="blue")))')
   heatmap_a<-eval(parse(text=string_command))
   maxRD<- max(Hmap_LFC$DEnoInf.LFC, na.rm = T)
-  minRD<-min(Hmap_LFC$DEnoInf.LFC, na.rm = T)
+  minRD<-min(Hmap_LFC$DEnoInf.LFC, na.rm= T)
   Hmap_LFC<-Hmap_LFC[which(!is.na(Hmap_LFC$DEnoInf.Feature.ID)), ]
   rownames(Hmap_LFC)<-Hmap_LFC$DEnoInf.Feature.ID
-  resort<-Filtered_Sample[match(rownames(Hmap_LFC), rownames(Filtered_Sample)),]
-
+  resort<-Filtered_norm[match(rownames(Hmap_LFC), rownames(Filtered_norm)),]
+  resort<-resort[,order(match(paste(colnames(resort)), paste(comp_sampleList$V1)))]
+  haDE.h<-Heatmap(data.frame(Hmap_LFC$DEnoInf.LFC), cluster_rows = FALSE, width = 0.25, show_heatmap_legend = FALSE, show_row_names = FALSE, show_column_names = FALSE, col = colorRamp2(c(minRD, maxRD), c("gray", "pink")))
+  hmap_plot<- Heatmap(resort, show_row_names = FALSE, column_names_gp = gpar(fontsize = 6), name="ScaledCPM", column_title_gp = gpar(fontsize=6), column_title_side = "bottom", top_annotation = heatmap_a, row_names_gp = gpar(fontsize = 2), cluster_rows = FALSE)
   
-#######NEEDS A CHECK FOR MORE THAN 1 LEFT AFTER FILTERING####
-    haDE.h<-Heatmap(data.frame(Hmap_LFC$DEnoInf.LFC), cluster_rows = FALSE, width = 0.25, show_heatmap_legend = FALSE, show_row_names = FALSE, show_column_names = FALSE, col = colorRamp2(c(minRD, maxRD), c("gray", "pink")))
- 
-   ####Adding names to heatmaps  
-  if(mapf=="none" || nrow(resort)>200)
-    {
-      hmap_plot<- Heatmap(resort, show_row_names = FALSE, column_names_gp = gpar(fontsize = 6), name="ScaledCPM", column_title_gp = gpar(fontsize=6), column_title_side = "bottom", top_annotation = heatmap_a, row_names_gp = gpar(fontsize = 2), cluster_rows = FALSE)
-    }else if(nrow(resort)<=200)
-    {
-      Mapping<-read.table(mapf, check.names=FALSE, header = TRUE, fill = TRUE)
-      new_resort<-merge(resort, Mapping, by.x=0, by.y="Gene", all.x=TRUE)
-    
-      for(a in 1:length(new_resort$Genename))
-      {
-        if(is.na(new_resort$Genename[a])==TRUE)
-        {
-          hold1<-toString((new_resort$Row.names[a]))
-          new_resort$Genename2[a]=hold1
-        }
-        else{
-            hold1<-toString((new_resort$Genename[a]))
-            new_resort$Genename2[a]=hold1
-          
-        }
-        new_resort$isUnique<-isUnique(new_resort$Genename2)
-        if(new_resort$isUnique[a]=="FALSE")
-          {
-            hold1<-paste0(toString((new_resort$Genename2[a])), "-", toString(new_resort$Row.names[a]))
-            new_resort$Genename2[a]=hold1
-          }
-      }
-    
-    
-      rownames(new_resort)<-new_resort$Genename2
-      new_resort$Genename<-NULL
-      new_resort$Row.names<-NULL
-      new_resort$Genename2<-NULL
-      new_resort$isUnique<-NULL
-      new_resort<-new_resort[order(rowMeans(new_resort), decreasing = TRUE), ]
-      hmap_plot<- Heatmap(new_resort, show_row_names = TRUE,  name="scaledCPM", 
-                          column_title_gp = gpar(fontsize=2), column_title_side = "bottom",row_names_side = "left",
-                          top_annotation = heatmap_a, cluster_rows = FALSE, row_names_gp=gpar(fontsize=2), column_names_gp =gpar(fontsize=6) )
-    }
   htlistDE=hmap_plot +  haDE.h
-      file_name = paste(DEOut,i, "_Hmap_images.png", sep="")
-      png(file_name,width = 7, height = 8, units = 'in', res = 600)
-      draw(htlistDE)
-      dev.off()
-}
-}
-}
-if(file.exists(normal)==FALSE)
-{
-    #DEcounts<-list.files(DECountPath, pattern = ".counts", full.names = TRUE)
-    for(i in 1: length(DeFiles))
-    {
-      DEInf<-read.table(DeFiles[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
-      DECnts<-read.table(all_counts_file, check.names=FALSE, sep="\t", as.is = TRUE, header = T)
-      names(DEInf)[6]<-"LFC"
-      DEInf<-DEInf[DEInf$FDR<FDRc, ]
-      DEInf<-DEInf[DEInf$LFC >LFCc | DEInf$LFC< -LFCc, ]
-      DEInf<-DEInf[order(DEInf$Read.Count.All), ]
-      p10comp<-(nrow(DEInf)*10)/100
-      p10compdf<-DEInf[0:p10comp,]
-      if(nrow(p10compdf)>1){
-        cutoff<-mean(range(p10compdf$Read.Count.All))
-      }else {
-        cutoff<-mean(range(DEInf$Read.Count.All))
-      }
-
-      DEInf<-DEInf[DEInf$Read.Count.All > cutoff, ]
-      DEnoInf<-DEInf
-      
-      if(nrow(DEnoInf)>=2)
-      {
-      columnI <- DEnoInf$LFC[which(!is.na(DEnoInf$LFC))]
-      columni <- columnI[which(columnI < Inf)]
-      posINF<-max(columni,na.rm = T)
-      columni <- columnI[which(columnI > -Inf)]
-      negINF<-min(columni,na.rm = T)
-      DEnoInf$LFC[DEnoInf$LFC=="-Inf"]<-negINF
-      DEnoInf$LFC[DEnoInf$LFC=="Inf"]<-posINF
-      Hmap_LFC<-data.frame(DEnoInf$Feature.ID, DEnoInf$LFC)
-      Hmap_LFC<-Hmap_LFC[order(Hmap_LFC$DEnoInf.LFC, decreasing = TRUE), ]
-      t1_comp<-names(DEnoInf)[3]
-      t2_comp<-names(DEnoInf)[4]
-      comp_list<-list()
-      t1_comp<-gsub("Read.Count.", "", t1_comp)
-      t2_comp<-gsub("Read.Count.", "", t2_comp)
-      comp_list<-append(comp_list, t1_comp)
-      comp_list<-append(comp_list, t2_comp)
-      comp_list<-unlist(comp_list)
-      degenes_list<-DEnoInf$Feature.ID #DEInf used in normal=T
-      comp_samples<-data.frame(subset(myinfo, myinfo$V2 %in%comp_list), check.names=FALSE)
-      comp_sampleList<- unlist(comp_samples$V1)
-      ##Same Till here
-      
-      DECnts_samples<-data.frame(subset(DECnts, colnames(DECnts[2:21]) %in% comp_sampleList), check.names=F)
-      rownames(DECnts_samples)<-DECnts_samples$ID
-      DECnts_samples$ID<-NULL
-      #Remove all rowsums with 0
-      DECnts_no0<-data.frame(DECnts_samples[rowSums(DECnts_samples)!=0, ], check.names = FALSE)
-      #Replace 0 with 1
-      DECnts_no0[DECnts_no0==0]<-1
-      DECnts_samples<-cpm(DECnts_no0)
-      Filtered_norm<-subset(DECnts_samples, rownames(DECnts_samples) %in% degenes_list, check.names=FALSE)
-      if(length(Filtered_norm)>=2){
-      comp_sampleList<-comp_samples[order(comp_samples$V1),]
-      heatmp_a<-data.frame(factor(comp_sampleList$V2))
-      colass<-unlist(unique(heatmp_a)) #Remove- maybe Unnecessary
-      colnames(heatmp_a)<-"Group"   
-      levels(heatmp_a)=levels(heatmp_a$Group)
-      #levels(heatmp_a)<-heatmp_a
-      l1<-levels(heatmp_a$Group)[1]
-      l2<-levels(heatmp_a$Group)[2]
-      df=data.frame(heatmp_a=heatmp_a)      
-      string_command<-paste0('HeatmapAnnotation(df, annotation_legend_param = list(title="Condition", title_gp = gpar(fontsize = 10, fontface=2, fontfamily="Helvetica")), col=list(Group=c(',l1,'="darkgreen",', l2, '="blue")))')
-      heatmap_a<-eval(parse(text=string_command))
-      maxRD<- max(Hmap_LFC$DEnoInf.LFC, na.rm = T)
-      minRD<-min(Hmap_LFC$DEnoInf.LFC, na.rm= T)
-      Hmap_LFC<-Hmap_LFC[which(!is.na(Hmap_LFC$DEnoInf.Feature.ID)), ]
-      rownames(Hmap_LFC)<-Hmap_LFC$DEnoInf.Feature.ID
-      resort<-Filtered_norm[match(rownames(Hmap_LFC), rownames(Filtered_norm)),]
-      resort<-resort[,order(match(paste(colnames(resort)), paste(comp_sampleList$V1)))]
-      haDE.h<-Heatmap(data.frame(Hmap_LFC$DEnoInf.LFC), cluster_rows = FALSE, width = 0.25, show_heatmap_legend = FALSE, show_row_names = FALSE, show_column_names = FALSE, col = colorRamp2(c(minRD, maxRD), c("gray", "pink")))
-      #LFC_bar<-subset(Hmap_LFC, rownames(Hmap_LFC) %in% rownames(Filtered_norm), check.names=F)
-      #LFC_bar$DEnoInf.Feature.ID<-NULL
-      #haDE.h<-Heatmap(data.frame(LFC_bar), cluster_rows = FALSE, width = 0.25, show_heatmap_legend = FALSE, show_row_names = FALSE, show_column_names = FALSE, col = colorRamp2(c(minRD, maxRD), c("gray", "pink")))
-      #hmap_plot<- Heatmap(scale(resort), show_row_names = FALSE,  name="scaledCPM", 
-      #                    column_title_gp = gpar(fontsize=2), column_title_side = "bottom",row_names_side = "left",
-      #                    top_annotation = heatmap_a, cluster_rows = FALSE, row_names_gp=gpar(fontsize=2), column_names_gp =gpar(fontsize=6) )
-      hmap_plot<- Heatmap(resort, show_row_names = FALSE, column_names_gp = gpar(fontsize = 6), name="ScaledCPM", column_title_gp = gpar(fontsize=6), column_title_side = "bottom", top_annotation = heatmap_a, row_names_gp = gpar(fontsize = 2), cluster_rows = FALSE)
-      
-      htlistDE=hmap_plot +  haDE.h
-      file_name = paste(DEOut,i, "_Hmap_images.png", sep="")
-      png(file_name,width = 7, height = 8, units = 'in', res = 600)
-      #plot_list[i] = htlistDE
-      draw(htlistDE)
-      dev.off()
-      }} 
-    }
+  file_name = paste(DEOut,i, "_Hmap_images.png", sep="")
+  png(file_name,width = 7, height = 8, units = 'in', res = 600)
+  #plot_list[i] = htlistDE
+  draw(htlistDE)
+  dev.off()
+  }
+  }
 }
 ```
 
