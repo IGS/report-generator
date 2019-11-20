@@ -93,53 +93,69 @@ myinfo <- as.matrix(read.table(infoFile, check.names=FALSE, sep = "\t", as.is=TR
 infoF<-data.frame(read.table(infoFile,header=F,sep = "\t",as.is=TRUE, check.names = FALSE))
 countsFile<-paste0(direc, "/all_counts.txt")
 #non_norm_allcounts<-as.matrix(read.table(countsFile,header=TRUE,sep = "\t",as.is=TRUE, check.names = FALSE))
-allcounts_deseq<-read.table(countsFile,header=TRUE,sep = "\t",as.is=TRUE, check.names = FALSE)
-rownames(allcounts_deseq)<-allcounts_deseq$ID
-allcounts_deseq$ID<-NULL
+allcounts_htseq<-read.table(countsFile,header=TRUE,sep = "\t",as.is=TRUE, check.names = FALSE)
+rownames(allcounts_htseq)<-allcounts_htseq$ID
+allcounts_htseq$ID<-NULL
 info_cond<-data.frame(infoF$V1, infoF$V2)
 rownames(info_cond)<-infoF$V1
 info_cond$infoF.V1<-NULL 
-cds = newCountDataSet(allcounts_deseq, info_cond)
-cds = estimateSizeFactors(cds)
-allcounts<-counts(cds, normalized=TRUE)
-write.table(allcounts, file = paste0(GEPathD,"allcounts_normalized.txt"), sep = "\t", row.names = T, col.names = T)
 
-infoF<-data.frame(read.table(infoFile,header=F,sep = "\t",as.is=TRUE, check.names = FALSE))
-Samplenames<-colnames(allcounts)
-
-Samplenames<-Samplenames[2:length(Samplenames)]
-df1<-data.frame(allcounts, check.names = FALSE)
-df2<-df1[,-1]
-
-#rownames(df2)<-df1[,1]
-y <- apply(as.matrix(df1), 2, as.numeric)
-rownames(y)<-rownames(df1)
-write.table(y, file = paste0(GEPathD,"Combined_counts_normalized.txt"), sep = "\t", row.names = T)
-#Remove all rows that sum to 0
-
+####Generating CPM files before normalization
+####Dealing with 0s in counts file
+y <- apply(as.matrix(allcounts_htseq), 2, as.numeric)
+rownames(y)<-rownames(allcounts_htseq)
 no0<-data.frame(y[rowSums(y)!=0, ], check.names = FALSE)
-write.table(no0, file = paste0(GEPathD, "filtered_for_0_counts_normalized.txt"), sep = "\t")
-
-#Adjust remaining 0->1
+write.table(no0, file = paste0(GEPathD, "1_filtered_for_0_rowsum_counts.txt"), sep = "\t")
 no1<-no0
 no1[no1==0]<-1
-write.table(no1, file = paste0(GEPathD,"Adjusted_No0_filtered_counts_normalized.txt"), sep = "\t")
-
-#CPM
+write.table(no1, file = paste0(GEPathD,"2_Adjusted_No0_counts.txt"), sep = "\t")
 cpmAllCounts<-cpm(no1)
-write.table(cpmAllCounts, file = paste0(GEPathD,"CPM_counts_normalized.txt"), sep = "\t")
-#LogCPM
+write.table(cpmAllCounts, file = paste0(GEPathD,"3_CPM_counts_all_samples.txt"), sep = "\t")
 logCPM<-log(cpmAllCounts)
-write.table(logCPM, file = paste0(GEPathD,"logCPM_count_normalized.txt"), sep = "\t")
-tv<-t(logCPM)
-mv<-melt(logCPM)
+write.table(logCPM, file = paste0(GEPathD,"4_logCPM_counts_all_samples.txt"), sep = "\t")
 
-boxplot1<-ggplot(mv, aes(x = mv[,2], y = mv$value, color=mv[,2])) + geom_boxplot()+labs(x = "", y= "log CPM", fill=" ")+scale_fill_discrete(name = "Samples")+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+ theme(legend.position="none")+coord_flip()
+#Normalizing with deseq
+condition <- factor(as.character(myinfo[,2]))
+cds <- newCountDataSet(allcounts_htseq, condition)
+cds <- estimateSizeFactors(cds)
+###From v2b3 deseq.R
+if (sum(ifelse((data.frame(table(as.character(myinfo[,2])))$Freq < 2), 1, 0)) > 0){
+  cat("\t* Estimating dispersions without replicates ...\n")
+  cds <- estimateDispersions(cds, method="blind", sharingMode="fit-only", fitType="local")
+} else {
+  cat("\t* Estimating dispersions with replicates ...\n")
+  cds <- estimateDispersions(cds, method="pooled", sharingMode="fit-only", fitType="local")
+}
+out <- cbind(rownames(fData(cds)), fData(cds))
+colnames(out) <- c("ID", colnames(fData(cds)))
+write.table(out, file = paste0(GEPathD,"5_dispersion_counts.tsv"), na="NA", sep="\t", quote=F, row.names=F)
+
+#Estimating Variance
+cat("\n* Estimating variance...\n")
+vsd <- varianceStabilizingTransformation(cds)
+out_vsd <- cbind(rownames(exprs(vsd)), exprs(vsd))
+colnames(out_vsd) <- c("ID", colnames(exprs(vsd)))
+write.table(out_vsd, file = paste0(GEPathD,"6_all_counts_noZero_normalized.tsv"), na="NA", sep="\t", quote=F, row.names=F)
+
+#allcounts<-counts(cds, normalized=TRUE)
+allcounts <- data.frame(out_vsd, check.names = F)
+allcounts_withID<-data.frame(out_vsd, check.names = F)
+rownames(allcounts_withID)<-NULL
+
+allcounts$ID <-NULL
+Samplenames<-colnames(allcounts)
+boxplot_df<-out_vsd
+boxplot_df <- boxplot_df[,-1]
+boxplot_df <- apply(boxplot_df,2, as.numeric)
+rownames(boxplot_df)<-rownames(out_vsd)
+mv<-melt(boxplot_df)
+
+boxplot1<-ggplot(mv, aes(x = mv$Var2, y = mv$value, color=mv$Var2)) + geom_boxplot()+labs(x = "", y= "log Normalized Counts", fill=" ")+scale_fill_discrete(name = "Samples")+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+ theme(legend.position="none")+coord_flip()
 
 ggsave("Figure1.png", path = GEPathD, plot = boxplot1, height = 12, width = 10)
 
 
-title_wrap<-strwrap("Figure 1. Boxplots of log-CPM values: This shows the expression profile of normalized read counts for each sample. The line dividing the box represents the median of the data and top and bottom of the box shows the upper and lower quartiles respectively. The whiskers show the highest and lowest values, excluding outliers, which are show as dots.", width = 150, simplify = F)
+title_wrap<-strwrap("Figure 1. Boxplots of log Normalized Counts: This shows the expression profile of normalized read counts for each sample. The line dividing the box represents the median of the data and top and bottom of the box shows the upper and lower quartiles respectively. The whiskers show the highest and lowest values, excluding outliers, which are show as dots.", width = 150, simplify = F)
 
 title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
 grid.arrange(boxplot1, top=textGrob(title_wrapped, gp=gpar(fontsize=11)))
@@ -149,7 +165,7 @@ grid.arrange(boxplot1, top=textGrob(title_wrapped, gp=gpar(fontsize=11)))
 ```{r displayDensity, echo=FALSE, fig.height=8, fig.width=12, message=FALSE, warning=FALSE}
 #\blandscape
 
-dF.lCPM<- data.frame(logCPM, check.names = FALSE, stringsAsFactors = FALSE)
+dF.lCPM<- data.frame(boxplot_df, check.names = FALSE, stringsAsFactors = FALSE)
 T.dF<-data.frame(t(dF.lCPM), keep.rownames=F, check.names = FALSE, stringsAsFactors = FALSE)
 info.F<-data.frame(myinfo, check.names = FALSE, stringsAsFactors = FALSE)
 rownames(info.F)<-info.F$V1
@@ -159,7 +175,7 @@ meltG<-melt(mergeGroups, id=c("Row.names", "keep.rownames", "V1", "V2", "V3"))
 DensityG<-data.frame(meltG$Row.names, meltG$V2, meltG$variable, as.numeric(as.character(meltG$value)))
 colnames(DensityG)<-c("SampleID","Group", "variable", "value")
 
-title_wrap<-strwrap("Figure 2. Density of log-CPM values: This shows expression profile of normalized read counts for each sample, colored by group. The X-axis is the log-CPM (counts per million), and the Y-axis is the density  across the read counts for each sample. Density plots visualise the distribution of data over a continuous interval or time period", width = 150, simplify = F)
+title_wrap<-strwrap("Figure 2. Density of normalized log counts: This shows expression profile of normalized read counts for each sample, colored by group. The X-axis is the log-CPM (counts per million), and the Y-axis is the density  across the read counts for each sample. Density plots visualise the distribution of data over a continuous interval or time period", width = 150, simplify = F)
 
 title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
 DensityG<-na.omit(DensityG)
@@ -172,7 +188,7 @@ ggsave("Figure2.png", path = GEPathD, plot = density1, height = 8, width = 12)
 
 ```{r heatmapE, echo=FALSE, fig.height=12, fig.width=10, warning=FALSE}
 myinfo <- as.matrix(read.table(infoFile, check.names=FALSE, sep = "\t", as.is=TRUE))
-scaled<-(scale(logCPM))
+scaled<-(scale(boxplot_df))
 scaled<-scaled[,order(colnames(scaled))]
 tbox<-data.frame(myinfo[,1], myinfo[,2])
 colnames(tbox)<-c("SampleID", "Group")
@@ -302,7 +318,7 @@ pclust_dend<-myplclust(pClust, labels=samplecols$SampleID, lab.col=samplecols$co
 #
 ```
 
-```{r DendSave, echo=FALSE, fig.height=12, fig.width=10, warning=FALSE, fig.show=F}
+```{r DendSave, echo=FALSE, warning=FALSE, fig.show=F}
 #Save Heatmap as png
 eden_out_name = paste0(GEPathD, "/Figure_5_DE_Euc_dendrogram.png")
 png(eden_out_name, res=100, width = 14, height =8, units = "in")
@@ -317,7 +333,7 @@ invisible(dev.off())
 \newpage
 ```{r PCA, echo=FALSE, fig.width=10, fig.height=10, warning=FALSE}
 if (qc_passed == T) {
-tv_test<-t(allcounts)
+tv_test<-t(boxplot_df)
 PC<-prcomp(tv_test)
 PC.df<-data.frame(PC$x)
 Group.pc<-data.frame(merge(PC.df, info_cond, by=0, all=TRUE))
