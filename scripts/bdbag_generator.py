@@ -148,6 +148,7 @@ def generate_ge_report(outdir, ergatis_repository, ergatis_pid):
     Output: GE files copied
     """
     # Remove redundant references and separators in path, if applicable
+    ##Only run GE if HTSEQ was run!!!
     outdir = os.path.normpath(outdir)
     ergatis_repository = os.path.normpath(ergatis_repository)
     print("In GE")
