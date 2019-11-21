@@ -35,12 +35,12 @@ def main():
         renameDE = args.rename
     else:
         renameDE= "/home/apaala.chatterjee/RNA_Report/rename_de.R"
-
+    #print(renameDE)
     #Check What reports are requested and pulling relevant files
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     if args.allreports:
-        generate_all_reports(output_dir, ergatis_repository, args.pid)
+        generate_all_reports(output_dir, ergatis_repository, args.pid, renameDE)
     else:
         if args.fqc:
             print("Starting FastQC file gathering")
@@ -96,12 +96,12 @@ def generate_all_counts(path_to_counts):
     print(all_counts_merge.head())
     return(all_counts_merge)
 
-def generate_all_reports(output_dir, ergatis_repository, ergatis_pid):
+def generate_all_reports(output_dir, ergatis_repository, ergatis_pid, renameDE):
     """Generate all possible reports."""
     only_fqc = generate_fastqc_report(output_dir, ergatis_repository, ergatis_pid)
     only_aln = generate_alignment_report(output_dir, ergatis_repository, ergatis_pid)
     only_ge = generate_ge_report(output_dir, ergatis_repository, ergatis_pid)
-    only_de = generate_de_report(output_dir, ergatis_repository, ergatis_pid)
+    only_de = generate_de_report(output_dir, ergatis_repository, ergatis_pid, renameDE)
 
 def generate_alignment_report(outdir, ergatis_repository, ergatis_pid):
     """
@@ -124,7 +124,8 @@ def generate_de_report(outdir, ergatis_repository, ergatis_pid, renameDE):
     outdir = os.path.normpath(outdir)
     ergatis_repository = os.path.normpath(ergatis_repository)
     base_counts = os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/")
-    #print(base_counts)
+    print("In DE")
+    #print(renameDE)
     de_paths = [os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/*.counts.txt"), os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/*de_genes.txt")]
     #print(de_paths)
     de_dir = os.path.join(outdir, "DE")
@@ -179,10 +180,12 @@ def generate_fastqc_report(outdir, ergatis_repository, ergatis_pid):
     # Remove redundant references and separators in path, if applicable
     outdir = os.path.normpath(outdir)
     ergatis_repository = os.path.normpath(ergatis_repository)
-
-    fqc_path = os.path.join(ergatis_repository, "/fastqc_stats/", ergatis_pid, "_fastqc/i1/g*/*/Images/")
+    ###This command is failing so I am changing it back to not use os.join for now
+    #fqc_path = os.path.join(ergatis_repository, "/fastqc_stats/", ergatis_pid, "_fastqc/i1/g*/*/Images/")
+    fqc_path = os.path.normpath(ergatis_repository+"/fastqc_stats/"+ergatis_pid+ "_fastqc/i1/g*/*/Images/")
+    print(ergatis_repository) 
     print("Staring Directory Setup")
-
+    print(fqc_path)
     dir_list = ["FastQC_Files", "FastQC_Files/KmerProfiles", "FastQC_Files/BaseQuality", "FastQC_Files/adapter_content", "FastQC_Files/duplication_levels", "FastQC_Files/per_base_n_content", "FastQC_Files/per_base_sequence_content", "FastQC_Files/per_sequence_gc_content", "FastQC_Files/per_sequence_quality", "FastQC_Files/per_tile_quality", "FastQC_Files/sequence_length_distribution"]
 
     extension_list = ["*_sequence.kmer_profiles.png", "*_base_quality.png", "*_sequence.adapter_content.png", "*_sequence.duplication_levels.png", "*_sequence.per_base_n_content.png", "*_sequence.per_base_sequence_content.png", "*_sequence.per_sequence_gc_content.png", "*_sequence.per_sequence_quality.png", "*_sequence.per_tile_quality.png", "*_sequence.sequence_length_distribution.png"]
