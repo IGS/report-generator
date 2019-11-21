@@ -82,7 +82,7 @@ match_IDs<-function(from_counts, from_info){
 
 ```
 
-```{r read, echo=FALSE, fig.width=10, fig.height=12, warning=FALSE}
+```{r read, echo=FALSE, fig.width=10, fig.height=12, warning=FALSE, message=FALSE}
 direc=unlist(params$pathd)
 mapf<-unlist(params$mappingf)
 setwd(direc)
@@ -120,18 +120,13 @@ cds <- newCountDataSet(allcounts_htseq, condition)
 cds <- estimateSizeFactors(cds)
 ###From v2b3 deseq.R
 if (sum(ifelse((data.frame(table(as.character(myinfo[,2])))$Freq < 2), 1, 0)) > 0){
-  cat("\t* Estimating dispersions without replicates ...\n")
   cds <- estimateDispersions(cds, method="blind", sharingMode="fit-only", fitType="local")
 } else {
-  cat("\t* Estimating dispersions with replicates ...\n")
   cds <- estimateDispersions(cds, method="pooled", sharingMode="fit-only", fitType="local")
 }
 out <- cbind(rownames(fData(cds)), fData(cds))
 colnames(out) <- c("ID", colnames(fData(cds)))
 write.table(out, file = paste0(GEPathD,"5_dispersion_counts.tsv"), na="NA", sep="\t", quote=F, row.names=F)
-
-#Estimating Variance
-cat("\n* Estimating variance...\n")
 vsd <- varianceStabilizingTransformation(cds)
 out_vsd <- cbind(rownames(exprs(vsd)), exprs(vsd))
 colnames(out_vsd) <- c("ID", colnames(exprs(vsd)))
