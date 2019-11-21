@@ -131,7 +131,7 @@ def generate_all_counts(path_to_counts):
     print(all_counts_merge.head())
     return(all_counts_merge)
 
-def generate_all_reports(outdir, wrappers_dir, rpath, project_name, info_file, prok, mapping_file, args=None):
+def generate_all_reports(extracted_path, wrappers_dir, rpath, project_name, info_file, prok, mapping_file, args=None):
     """Generate all possible reports.  Assumes all wrapper scripts are in the same directory."""
 
     wrap_FQC = os.path.join(wrappers_dir, "wrapper_FastQC.R")
