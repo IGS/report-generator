@@ -135,33 +135,33 @@ def generate_all_reports(outdir, wrappers_dir, rpath, project_name, info_file, p
     """Generate all possible reports.  Assumes all wrapper scripts are in the same directory."""
 
     wrap_FQC = os.path.join(wrappers_dir, "wrapper_FastQC.R")
-    if opts.fwrap:
-        wrap_FQC = opts.fwrap
+    if args.fwrap:
+        wrap_FQC = args.fwrap
     generate_fastqc_report(extracted_path, wrap_FQC, rpath, args.pname, args.info)
 
     wrap_ALN = os.path.join(wrappers_dir, "wrapper_Alignment.R")
     if prok:
         wrap_ALN_prok = os.path.join(wrappers_dir, "wrapper_Alignment_prok.R")
-    if opts.awrap:
-        wrap_ALN = opts.awrap
+    if args.awrap:
+        wrap_ALN = args.awrap
     generate_alignment_report(extracted_path, wrap_ALN, rpath, args.pname, args.info)
 
     if mapping_file:
         wrap_GE_mapping = os.path.join(wrappers_dir, "wrapper_GE_mapping.R")
         wrap_DE_mapping = os.path.join(wrappers_dir, "wrapper_DE_mapping.R")
-        if opts.gwrap:
-            wrap_GE_mapping = opts.gwrap
-        if opts.dwrap:
-            wrap_DE_mapping = opts.dwrap
+        if args.gwrap:
+            wrap_GE_mapping = args.gwrap
+        if args.dwrap:
+            wrap_DE_mapping = args.dwrap
         map_to_GE(extracted_path, wrap_GE_mapping, rpath, args.pname, args.info, args.mapping)
         map_to_DE(extracted_path, wrap_DE_mapping, rpath, args.pname, args.info, args.mapping)
     else:
         wrap_GE = os.path.join(wrappers_dir, "wrapper_GE.R")
         wrap_DE = os.path.join(wrappers_dir, "wrapper_DE.R")
-        if opts.gwrap:
-            wrap_GE = opts.gwrap
-        if opts.dwrap:
-            wrap_DE = opts.dwrap
+        if args.gwrap:
+            wrap_GE = args.gwrap
+        if args.dwrap:
+            wrap_DE = args.dwrap
         generate_ge_report(extracted_path, wrap_GE, rpath, args.pname, args.info)
         generate_de_report(extracted_path, wrap_DE, rpath, args.pname, args.info)
 
