@@ -38,7 +38,7 @@ direc=unlist(params$pathd)
 setwd(direc)
 fn=paste0(direc,"/Summary.txt")
 info<-unlist(params$infof)
-newimg<-paste0(direc, "/AlignmentTables")
+newimg<-paste0(direc, "/AlignmentFiles")
 lns = readLines(fn, n=1)
 vec<-unlist(strsplit(lns, split = "\t"))
 mystring <- read.table(fn, check.names=FALSE, col.names=vec, sep="\t", as.is = TRUE)
@@ -61,13 +61,23 @@ t2g<-tableGrob(t2, theme=mytheme)
 
 h1 <- grobHeight(t1g)
 w1 <- grobWidth(t1g)
-title1 <- textGrob("Table 1. Alignment statistics for all samples listing the proportion of reads mapped for each sample", gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h1, vjust=0)
+
+title_wrap<-strwrap("Table 1. Alignment Summary: Statistics for all samples listing proportions of reads mapped for each sample. Low percent mapped can indicate either poor read quality or contamination with nucleic acids of another organism.", width = 100, simplify = F)
+
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+
+title1 <- textGrob(title_wrapped, gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h1, vjust=0)
 gt1 <- gTree(children=gList(t1g, title1))
 #grid.draw(gt)
 
 h2 <- grobHeight(t2g)
 w2 <- grobWidth(t2g)
-title2 <- textGrob("Table 2. Alignment statistics for all samples listing the proportion of reads mapping to different genomic components,\n the number of genomic features with read coverage, and the average RPKM for each sample", gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h2, 
+
+title_wrap<-strwrap("Table 2. Alignment to genomic component:  Statistics for all samples listing the proportion of reads mapped to different genomic components, the number of genomic features with read coverage, and the average RPKM for each samples. High proportions of reads mapping to intergenic regions can indicate DNA contamination. Immature RNA contamination can cause a high proportion of the reads to map to intronic regions.", width = 100, simplify = F)
+
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+
+title2 <- textGrob(title_wrapped, gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h2, 
                   vjust=0)
 gt2 <- gTree(children=gList(t2g, title2))
   ggsave(gt1, path = newimg, width = 8, height = 10, filename = paste0("t1_1_table1.png"))
@@ -93,20 +103,30 @@ for(i in 1: length(df))
   df_hold$Features.With.Coverage<-prettyNum(df_hold$Features.With.Coverage,  big.mark = ",",  scientific=FALSE)
   
   t1<-df_hold[,1:6]
-  t2<-df_hold[,c(1, 7:12)]
+  t2<-df_hold[,c(1, 7:11)]
   mytheme <- gridExtra::ttheme_default(core = list(fg_params=list(cex = 0.5, fontface="plain")), colhead = list(fg_params=list(cex = 0.5, fontface="bold")),rowhead = list(fg_params=list(cex = 0.5, fontface="bold")))
 
   t1g<-tableGrob(t1, theme=mytheme)
   t2g<-tableGrob(t2, theme=mytheme)
   h1 <- grobHeight(t1g)
   w1 <- grobWidth(t1g)
-  title1 <- textGrob("Table 1. Alignment statistics for all samples listing the proportion of reads mapped for each sample", gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h1, vjust=0)
+  
+  title_wrap<-strwrap("Table 1. Alignment Summary: Statistics for all samples listing proportions of reads mapped for each sample. Low percent mapped can indicate either poor read quality or contamination with nucleic acids of another organism.", width = 100, simplify = F)
+
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+
+  title1 <- textGrob(title_wrapped, gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h1, vjust=0)
   gt1 <- gTree(children=gList(t1g, title1))
   ggsave(gt1, path = newimg, width = 8, height = 10, filename = paste0("t1_",i,"_table1.png"))
   
   h2 <- grobHeight(t2g)
   w2 <- grobWidth(t2g)
-  title2 <- textGrob("Table 2. Alignment statistics for all samples listing the proportion of reads mapping to different genomic components,\n the number of genomic features with read coverage, and the average RPKM for each sample", gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h2, vjust=0)
+  
+  title_wrap<-strwrap("Table 2. Alignment to genomic component:  Statistics for all samples listing the proportion of reads mapped to different genomic components, the number of genomic features with read coverage, and the average RPKM for each samples. High proportions of reads mapping to intergenic regions can indicate DNA contamination. Immature RNA contamination can cause a high proportion of the reads to map to intronic regions.", width = 100, simplify = F)
+
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+
+  title2 <- textGrob(title_wrapped, gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h2, vjust=0)
   gt2 <- gTree(children=gList(t2g, title2))
   ggsave(gt2, path = newimg, width = 8, height = 10, filename = paste0("t2_",i,"_table2.png"))
   }
@@ -122,20 +142,27 @@ for(i in 1: length(df))
   df_hold$Features.With.Coverage<-prettyNum(df_hold$Features.With.Coverage,  big.mark = ",",  scientific=FALSE)
   
   t1<-df_hold[,1:6]
-  t2<-df_hold[,c(1, 7:12)]
+  t2<-df_hold[,c(1, 7:11)]
   mytheme <- gridExtra::ttheme_default(core = list(fg_params=list(cex = 0.5, fontface="plain")), colhead = list(fg_params=list(cex = 0.5, fontface="bold")),rowhead = list(fg_params=list(cex = 0.5, fontface="bold")))
 
   t1g<-tableGrob(t1, theme=mytheme)
   t2g<-tableGrob(t2, theme=mytheme)
   h1 <- grobHeight(t1g)
   w1 <- grobWidth(t1g)
-  title1 <- textGrob("Table 1. Alignment statistics for all samples listing the proportion of reads mapped for each sample (CONTD.)", gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h1, vjust=0)
+  title_wrap<-strwrap("Table 1. Alignment Summary: Statistics for all samples listing proportions of reads mapped for each sample. Low percent mapped can indicate either poor read quality or contamination with nucleic acids of another organism (CONTD).", width = 100, simplify = F)
+
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+  title1 <- textGrob(title_wrapped, gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h1, vjust=0)
   gt1 <- gTree(children=gList(t1g, title1))
   ggsave(gt1, path = newimg, width = 8, height = 10, filename = paste0("t1_",i,"_table1.png"))
   
   h2 <- grobHeight(t2g)
   w2 <- grobWidth(t2g)
-  title2 <- textGrob("Table 2. Alignment statistics for all samples listing the proportion of reads mapping to different genomic components,\n the number of genomic features with read coverage, and the average RPKM for each sample (CONTD.)", gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h2, vjust=0)
+  title_wrap<-strwrap("Table 2. Alignment to genomic component:  Statistics for all samples listing the proportion of reads mapped to different genomic components, the number of genomic features with read coverage, and the average RPKM for each samples. High proportions of reads mapping to intergenic regions can indicate DNA contamination. Immature RNA contamination can cause a high proportion of the reads to map to intronic regions (CONTD).", width = 100, simplify = F)
+
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+
+  title2 <- textGrob(title_wrapped, gp=gpar(fontsize=7), y=unit(0.5,"npc")+ 0.75*h2, vjust=0)
   gt2 <- gTree(children=gList(t2g, title2))
   ggsave(gt2, path = newimg, width = 8, height = 10, filename = paste0("t2_",i,"_table2.png"))
   }
@@ -153,17 +180,13 @@ if(chop_n<10)
 }
 ```
 
-```{r disp1, fig.show='asis', echo=FALSE,fig.width=10, fig.height=12, message=FALSE, fig.align='center'}
+```{r disp1, fig.show='asis', echo=FALSE, message=FALSE}
 
 if(chop_n>=10)
 {
   include_graphics(Tables_Split1, dpi=250)
 }
 
-
-#t1I<-readPNG(paste0(newimg, "/t1g.png"))
-#rastert1<-grid::rasterGrob(as.raster(t1I))
-#grid.arrange(rastert1, top=textGrob("Table 1. Alignment statistics for all samples listing the proportion of reads mapped for each sample", gp=gpar(fontsize=9)))
 ```
 
 ```{r disp, fig.show='asis', echo=FALSE}
@@ -172,13 +195,10 @@ if(chop_n>=10)
 {
   include_graphics(Tables_Split2, dpi=250)
 }
-#grid.arrange(t1g)
-#t2I<-readPNG(paste0(newimg, "/t2g.png"))
-#rastert2<-grid::rasterGrob(as.raster(t2I))
-#grid.arrange(rastert2, top=textGrob("Table 2. Alignment statistics for all samples listing the proportion of reads mapping to different genomic components,\n the number of genomic features with read coverage, and the average RPKM for each sample", gp=gpar(fontsize=9)))
 ```
-\blandscape
+#\blandscape
 ```{r mergeGrid, echo=FALSE, warning=FALSE, fig.height=8, fig.width=12}
+
 mystring <- read.table(fn, check.names=FALSE, col.names=vec, sep="\t", as.is = TRUE)
 colnames(mystring)<-c("Sample_ID","Total.Reads","Total.Mapped.Reads","Percent.Mapped.Reads","Percent.Properly.Paired","Uniquely.Mapped.Reads","Percent.Genic","Percent.Intergenic","Total.Features","Features.With.Coverage","Avg.RPKM" )
 frame<-data.frame(mystring$Sample_ID, mystring$Total.Mapped.Reads, mystring$Total.Reads, mystring$Percent.Mapped.Reads)
@@ -206,7 +226,13 @@ plot1<-frame %>%
         axis.ticks.x=element_blank())+ 
   theme(panel.grid = element_blank())
 
-grid.arrange(ggplotGrob(plot1), ggplotGrob(plot2), heights=c(0.75, 7), bottom=textGrob("Figure 1. Barplot illustrating the total reads, the proportion of reads mapped and the percent mapped for each sample",gp=gpar(fontsize=7)))
+title_wrap<-strwrap("Figure 1. Alignment summary barplot: This illustrates the total reads, total mapped reads, and percent mapped for each sample. Low percent mapped can indicate either poor read quality or contamination with nucleic acids of another organism. Great differences in total mapped reads can cause biases in features detected.", width = 100, simplify = F)
+
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+
+hold_plot1 = grid.arrange(ggplotGrob(plot1), ggplotGrob(plot2), heights=c(0.75, 7), bottom=textGrob(title_wrapped,gp=gpar(fontsize=7)))
+ggsave("Figure1.png", path = newimg, plot = hold_plot1, height = 8, width = 12)
+
 ```
 \elandscape
 
@@ -217,12 +243,12 @@ totalmapped<-data.frame(mystring$Sample_ID,mystring$Total.Mapped.Reads, mystring
 totalmapped<-data.frame(mystring$Sample_ID,mystring$Total.Mapped.Reads, mystring$Total.Reads)
 colnames(totalmapped)<-c("SampleID", "TotalMapped", "TotalReads")
 totalbar<-melt(totalmapped, id ="SampleID")
-#ggplot(totalbar, aes(x=totalbar$SampleID, y=totalbar$value, fill=factor(totalbar$variable)))+geom_bar(stat="identity",position="dodge")+coord_flip()+labs(x = "Samples", y= "", fill="",caption= "Figure 1. Barplot illustrating the total reads and the proportion of reads mapped for each sample")+theme(legend.position="top")+ theme(panel.grid = element_blank(), panel.border = element_blank())+ scale_y_continuous(expand = c(0, 0))
+
 ```
 ```{r percent, echo=FALSE, warning=FALSE}
 pmapped<-data.frame(mystring$Sample_ID,mystring$Percent.Mapped.Reads)
 colnames(pmapped)<-c("SampleID", "PercentMappedReads")
-#ggplot() + geom_bar(data = pmapped, aes(x=pmapped$SampleID, y=pmapped$PercentMappedReads), stat="identity", fill ="#FF1520")+coord_flip()+labs(x = "Samples", y= "Percent Mapped")+ scale_y_continuous(expand = c(0, 0))
+
 ```
 \blandscape
 ```{r stack, echo=FALSE, warning=FALSE, fig.height=8, fig.width=12}
@@ -240,8 +266,12 @@ percentplot<-ggplot() + geom_bar(aes(y = value, x = Sample_ID, fill = rev(factor
 #ggsave(percentplot, path = newimg, filename = "percentplot.png")
 #+ facet_wrap(~value, shrink = TRUE)
 
-grid.arrange(percentplot, bottom=textGrob("Figure 2. Stacked barplot illustrating the proportion of reads mapping to different genomic components for each sample", gp=gpar(fontsize=7)))
-#grid.arrange(percentplot, bottom="Figure 2. Stacked barplot illustrating the proportion of reads mapping to different genomic components for each sample")
+title_wrap<-strwrap("Figure 2. Alignment to Genomic Components: This illustrates the proportion of reads mapping to different genomics components. High proportions of reads mapping to intergenic regions can indicate DNA contamination. Immature RNA contamination can cause a high proportion of the reads to map to intronic regions.", width = 100, simplify = F)
+
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+
+hold_plot2 = grid.arrange(percentplot, bottom=textGrob(title_wrapped, gp=gpar(fontsize=7)))
+ggsave("Figure2.png", path = newimg, plot = hold_plot2, height = 8, width = 12)
 
 myinfo <- read.table(info, check.names=FALSE)
 myinfo <- myinfo[order(myinfo$V1),]
@@ -256,31 +286,32 @@ mystring <- mystring[order(mystring$Sample_ID),]
 tbox<-data.frame(mystring$Sample_ID, myinfo$V2, mystring$Total.Mapped.Reads, mystring$Total.Reads)
 colnames(tbox)<-c("Sample_ID", "Condition", "TotalMapped", "TotalReads")
 ttbox<-melt(tbox, id=c("Sample_ID", "Condition"))
-#ggplot(ttbox, aes(x = ttbox$Condition, y = value, fill = variable)) + geom_boxplot()+labs(x = "", y= "Reads",caption= "Figure 3. Boxplot illustrating the total number of reads and the number of reads mapped for each condition.")+ geom_dotplot(binaxis='y', stackdir='center',position=position_dodge(1), dotsize = 0.3, binwidth = .5)+ scale_fill_discrete(name = "")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1), legend.position="bottom")
+
 
 ttbox$variable<-factor(ttbox$variable,levels = rev(levels(ttbox$variable)),ordered = TRUE)
-#conditionM<-ggplot(ttbox, aes(x = ttbox$Condition, y = value, fill =ttbox$variable)) + geom_boxplot()+labs(x = "", y= "Reads")+ geom_dotplot(binaxis='y', stackdir='center',position=position_dodge(1), dotsize = 0.3, binwidth = .5)+ scale_fill_discrete(name = "")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1), legend.position="bottom")
 
 conditionM<-ggplot(ttbox, aes(x = ttbox$Condition, y = value, fill =ttbox$variable)) + geom_boxplot()+labs(x = "", y= "Reads")+ scale_fill_discrete(name = "")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1), legend.position="bottom")
 
-#conditionM<-ggplot(ttbox, aes(x = ttbox$Condition, y = value, fill = variable)) + geom_boxplot()+labs(x = "", y= "Reads")+ geom_dotplot(binaxis='y', stackdir='center',position=position_dodge(1), dotsize = 0.3, binwidth = .5)+ scale_fill_discrete(name = "")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1), legend.position="bottom")
+title_wrap<-strwrap("Figure 3. Read Distribution by Group: The boxplot illustrates the total number of reads and the number of mapped reads for all samples in each group. This figure gives an indication of how well samples in each group mapped to the reference. The median line in each box indicates how even the distribution of total reads/ mapped reads is within the group.", width = 140, simplify = F)
 
-grid.arrange(conditionM, bottom=textGrob("Figure 3. Boxplot illustrating the total number of reads and the number of reads mapped for each condition.", gp=gpar(fontsize=7)))
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
 
-#grid.arrange(ggplot(ttbox, aes(x = ttbox$Condition, y = value, fill = variable)) + geom_boxplot()+labs(x = "", y= "Reads") + geom_dotplot(binaxis='y', stackdir='center',position=position_dodge(1), dotsize = 0.3, binwidth = .5)+ scale_fill_discrete(name = "")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1), legend.position="top"), textGrob("Figure 3. Boxplot illustrating the total number of reads and the number of reads mapped for each condition."))
+hold_plot3=grid.arrange(conditionM, bottom=textGrob(title_wrapped, gp=gpar(fontsize=7)))
+ggsave("Figure3.png", path = newimg, plot = hold_plot3, height = 8, width = 12)
 
 ```
 
 ```{r proportion, echo=FALSE, warning=FALSE}
 pmapped<-mystring$Percent.Mapped.Reads
 percentmapped<-data.frame(myinfo[,1], myinfo[,2], pmapped)
-#ggplot(stack(percentmapped), aes(x= percentmapped$myinfo...2., y= percentmapped$pmapped))+geom_boxplot( color="darkred")+labs(x = "", y= "Percent Mapped Reads", caption="Figure 4. Boxplot illustrating the proportion of reads mapped for each condition.")+ geom_dotplot(binaxis='y', stackdir='center',position=position_dodge(1), dotsize = 0.3)+theme( axis.text.x = element_text(angle=90, hjust=1))
-
 pmappedC<-ggplot(stack(percentmapped), aes(x= percentmapped$myinfo...2., y= percentmapped$pmapped))+geom_boxplot( color="darkred")+labs(x = "", y= "Percent Mapped Reads")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1))
 
-#pmappedC<-ggplot(stack(percentmapped), aes(x= percentmapped$myinfo...2., y= percentmapped$pmapped))+geom_boxplot( color="darkred")+labs(x = "", y= "Percent Mapped Reads")+ geom_dotplot(binaxis='y', stackdir='center',position=position_dodge(1), dotsize = 0.3)+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1))
+title_wrap<-strwrap("Figure 4. Percent Mapped Reads: The boxplot illustrates the percentage of mapped reads for all samples in each group. This figure can highlight the differences in how reads map in different groups.", width = 140, simplify = F)
 
-grid.arrange(pmappedC, bottom=textGrob("Figure 4. Boxplot illustrating the proportion of reads mapped for each condition.", gp=gpar(fontsize=7)))
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+
+hold_plot4 = grid.arrange(pmappedC, bottom=textGrob(title_wrapped, gp=gpar(fontsize=7)))
+ggsave("Figure4.png", path = newimg, plot = hold_plot4, height = 8, width = 12)
 
 mbox<-data.frame(mystring$Sample_ID, myinfo[,2], mystring$Percent.Genic, mystring$Percent.Intergenic)
 colnames(mbox)<-c("Sample_ID", "Condition", "Percent.Genic", "Percent.Intergenic")
@@ -289,12 +320,12 @@ mmbox<-melt(mbox)
 \newline
 \newline
 ```{r prop, echo=FALSE, warning=FALSE}
-#ggplot(mmbox, aes(x = mmbox$Condition, y = value, color=variable)) + geom_boxplot()+labs(x = "", y= "Percentage Value", caption="Figure 5. Boxplot illustrating the proportion of reads mapping to different genomic components for each  condition.")+scale_color_manual(values=c("#56B4E9", "#E69F00","#999999"))+ geom_dotplot(binaxis='y', stackdir='center',position=position_dodge(1), binwidth=3, dotsize = 0.3)+ scale_fill_discrete(name ="")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1), legend.position="bottom")+theme(legend.title=element_blank())
-
 propotionC<-ggplot(mmbox, aes(x = mmbox$Condition, y = value, color=variable)) + geom_boxplot()+labs(x = "", y= "Percentage Value")+scale_color_manual(values=c("#56B4E9", "#E69F00","#999999"))+ scale_fill_discrete(name ="")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1), legend.position="bottom")+theme(legend.title=element_blank())
 
-#propotionC<-ggplot(mmbox, aes(x = mmbox$Condition, y = value, color=variable)) + geom_boxplot()+labs(x = "", y= "Percentage Value")+scale_color_manual(values=c("#56B4E9", "#E69F00","#999999"))+ geom_dotplot(binaxis='y', stackdir='center',position=position_dodge(1), binwidth=3, dotsize = 0.3)+ scale_fill_discrete(name ="")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1), legend.position="bottom")+theme(legend.title=element_blank())
-grid.arrange(propotionC, bottom=textGrob("Figure 5. Boxplot illustrating the proportion of reads mapping to different genomic components for each  condition.", gp=gpar(fontsize=7)))
+title_wrap<-strwrap("Figure 5. Genomic Components per condition: The boxplot illustrates the proportion of reads mapping to different genomic components for all samples in every group. The distristribution of reads between different components can be an indicator of alignment/reference quality or sequence quality.", width = 140, simplify = F)
 
-#ggplot(mmbox, aes(x = mmbox$Condition, y = value, color=variable)) + geom_boxplot()+labs(x = "", y= "Percentage Value")+scale_color_manual(values=c("#56B4E9", "#E69F00","#999999"))+ geom_dotplot(binaxis='y', stackdir='center',position=position_dodge(1), binwidth=3, dotsize = 0.3)+ scale_fill_discrete(name ="")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1), legend.position="bottom")+theme(legend.title=element_blank())+ ggtitle("Figure 5. Boxplot illustrating the proportion of reads mapping to different genomic components for each  condition.")
+title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
+
+hold_plot5 = grid.arrange(propotionC, bottom=textGrob(title_wrapped, gp=gpar(fontsize=7)))
+ggsave("Figure5.png", path = newimg, plot = hold_plot5, height = 8, width = 12)
 ```
