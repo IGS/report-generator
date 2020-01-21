@@ -444,18 +444,22 @@ venn<-venn.diagram(mergeComp, filename = NULL, fill = c("orange", "blue"), cex=1
 }
 ``` 
 
-```{r venndrw, echo=FALSE}
+```{r venndrw, echo=FALSE, warning=FALSE, message=FALSE}
 if(comp>1)
 {
 #grid.draw(venn)
 venn_title<-paste0("Figure 3. Venn Diagram: This diagram shows the number of shared DE genes between comparisons ", toString(names(mergeComp)), ". If there are more than three pairwise comparisons available, the comparisons used to show the overlap have been randomly selected.")
 venn_wrap<-strwrap(venn_title, width=98, simplify=F)
 venn_newline <- sapply(venn_wrap, paste, collapse = "\n")
-grid.arrange(gTree(children=venn), top=textGrob(venn_newline, gp=gpar(fontsize=9)))
+venn_save<-grid.arrange(gTree(children=venn), top=textGrob(venn_newline, gp=gpar(fontsize=9)))
+ggsave(paste0(DEOut,"/","VennDiagram",".png"), venn_save)
 }
 ```
 \newpage
-```{r scatter, echo=FALSE, warning=FALSE, fig.height=6, fig.width=8}
+```{r scatter, echo=FALSE, warning=FALSE, fig.height=6, fig.width=8, message=FALSE}
+
+#ggsave(paste0(DEOut,"/","VennDiagram",".png"), venn_save)
+
 col <- c()
 col2 <- c()
 col3 <- c()
@@ -577,7 +581,8 @@ title_qplot1<-paste0("Figure 4. Quadrant Plots: This set of plots show a compari
 q_wrap<-strwrap(title_qplot1, width=80, simplify=F)
 q_newline <- sapply(q_wrap, paste, collapse = "\n")
 hold<-ggplot(data=plot_df, aes(x=LFC1 , y=LFC2, colour=as.character(bin))) + theme_bw() + geom_point(alpha=1,size=1) + xlab(paste(name1,"(logFoldChange)",sep='')) + ylab(paste(name2,"(logFoldChange)",sep='')) + scale_colour_manual(name="Log(Fold.Change)",values=col,labels=lab)
-grid.arrange(hold, top=textGrob(q_newline, gp=gpar(fontsize=11)))
+qplot_s<-grid.arrange(hold, top=textGrob(q_newline, gp=gpar(fontsize=11)))
+ggsave(paste0(DEOut,"/",heading1,".png"), qplot_s)
 }
 
 if (comp >=3)
@@ -689,7 +694,7 @@ title_qplot1<-paste0("Figure 4. Quadrant plot showing a comparison of DEGs for e
 q_wrap<-strwrap(title_qplot1, width=98, simplify=F)
 q_newline <- sapply(q_wrap, paste, collapse = "\n")
 Qplot1<-ggplot(data=plot_df, aes(x=LFC1 , y=LFC2, colour=as.character(bin))) + theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0) + geom_point(alpha=1,size=1) + xlab(paste(name1,"(logFoldChange)",sep='')) + ylab(paste(name2,"(logFoldChange)",sep='')) + scale_colour_manual(name="Log(Fold.Change)",values=col,labels=lab)
-
+ggsave(paste0(DEOut,"/",heading1,".png"), Qplot1)
 ####Plot2
 
 mergeRcomp2<-merge(var1, var3, by.x='Feature.ID', by.y='Feature.ID', all=TRUE)
@@ -790,6 +795,7 @@ title_qplot2<-paste("Quadrant Plot showing differentially expressed genes betwee
 
 Qplot2<-ggplot(data=plot_df2, aes(x=LFC1 , y=LFC3, colour=as.character(bin))) + theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0)+ geom_point(alpha=1,size=1) + xlab(paste(name1,"(logFoldChange)",sep='')) + ylab(paste(name3,"(logFoldChange)",sep='')) + scale_colour_manual(name="Log(Fold.Change)",values=col2,labels=lab2)
 
+ggsave(paste0(DEOut,"/",heading2,".png"), Qplot2)
 mergeRcomp3<-merge(var2, var3, by.x='Feature.ID', by.y='Feature.ID', all=TRUE)
 mergeRcomp3[is.na(mergeRcomp3)]<- 0
 plot_df3<-mergeRcomp3
@@ -885,7 +891,7 @@ if (sum_1 >= 1) {
 heading3 <- paste(name2, name3, sep=' and ')
 title_qplot3<-paste("Quadrant Plot showing differentially expressed genes between", heading3)
 Qplot3<- ggplot(data=plot_df3, aes(x=LFC2 , y=LFC3, colour=as.character(bin))) + theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0)+ geom_point(alpha=1,size=1) + xlab(paste(name2,"(logFoldChange)",sep='')) + ylab(paste(name3,"(logFoldChange)",sep='')) + scale_colour_manual(name="Log(Fold.Change)",values=col3,labels=lab3)
-
+ggsave(paste0(DEOut,"/",heading3,".png"), Qplot3)
 grid.arrange(Qplot1, top=textGrob(q_newline, gp=gpar(fontsize=11)))
 grid.arrange(Qplot2)
 grid.arrange(Qplot3)
