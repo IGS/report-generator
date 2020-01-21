@@ -33,7 +33,7 @@ metrics of read quality can also be found in the BDBag. A short description of a
 generated can be found at the end of this report.
 
 \  
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(rmarkdown)
 library(knitr)
@@ -44,11 +44,11 @@ library(ggplot2)
 library(magick)
 ```
 
-```{r, include=FALSE}
+```{r, include=FALSE, warning=FALSE}
 direc=unlist(params$pathd)
 ```
 
-```{r grid, echo=FALSE, fig.show='hide'}
+```{r grid, echo=FALSE, fig.show='hide', warning=FALSE}
 setwd(direc)
 filen<-"Summary.txt"
 info<-unlist(params$infof)
@@ -122,7 +122,7 @@ for(i in seq(1,num,2)){
 
 ```
 
-```{r kmerProfiles, echo=FALSE,fig.show='hide'}
+```{r kmerProfiles, echo=FALSE,fig.show='hide', warning=FALSE}
 infilekmerPaths<-list()
 
 for(k in 1:length(sampleN))
