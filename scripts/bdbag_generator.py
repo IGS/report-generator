@@ -5,6 +5,7 @@ import pandas
 from bdbag import bdbag_api
 import bagit
 import glob
+import re
 
 def main():
     parser = argparse.ArgumentParser( description='BDBag Generator for Report Generation Tool')
@@ -22,7 +23,7 @@ def main():
     parser.add_argument("-b", "--bam", dest="bam",help="Pull BAMs into BAG", action='store_true')
     parser.add_argument("-s", "--sam", dest="sam",help="Pull SAMs into BAG", action='store_true')
     parser.add_argument("-m", "--make", dest="make",help="Make BDBAG", action='store_true')
-    parser.add_argument("-r", "--decounts", dest="rename", help = "Path to R script to copy and rename counts files from deseq", metavar="Path")
+    #parser.add_argument("-r", "--decounts", dest="rename", help = "Path to R script to copy and rename counts files from deseq", metavar="Path")
     args = parser.parse_args()
 
     ergatis_repository = os.path.normpath(args.pdir + "/output_repository/")
@@ -31,16 +32,16 @@ def main():
     output_dir = os.path.normpath(args.outdir + "/" + args.pname)
 
     #Rename Counts 
-    if args.rename:
-        renameDE = args.rename
-    else:
-        renameDE= "/home/apaala.chatterjee/RNA_Report/rename_de.R"
+    #if args.rename:
+    #    renameDE = args.rename
+    #else:
+    #    renameDE= "/home/apaala.chatterjee/RNA_Report/rename_de.R"
     #print(renameDE)
     #Check What reports are requested and pulling relevant files
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     if args.allreports:
-        generate_all_reports(output_dir, ergatis_repository, args.pid, renameDE)
+        generate_all_reports(output_dir, ergatis_repository, args.pid)
     else:
         if args.fqc:
             print("Starting FastQC file gathering")
@@ -52,7 +53,7 @@ def main():
             print("Starting GE file gathering")
             only_ge = generate_ge_report(output_dir, ergatis_repository, args.pid)
         if args.de:
-            only_de = generate_de_report(output_dir, ergatis_repository, args.pid, renameDE)
+            only_de = generate_de_report(output_dir, ergatis_repository, args.pid)
     if args.make and not args.update:
         create_bag(output_dir, False)
     if args.update:
@@ -74,6 +75,29 @@ def copy_files_to_dir(these_files, to_here):
     for i in range(len(these_files)):
         syscmd = "cp "+ these_files[i] + " " + to_here[i]
         os.system(syscmd)
+
+def counts_copy(path_to_counts_basedir, DEfilePath,DEOutPath):
+    print("Copying and renaming counts files")
+    ###make sure DEfilePaths has an extra/*
+    listname=glob.glob(DEfilePath)
+    basenames=[]
+    denames=[]
+    for i in listname:
+        hold=os.path.basename(i)
+        temp=re.sub("de_genes.txt", "counts", hold)
+        basenames.append(temp)
+        denames.append(hold)
+
+    counts = glob.glob(path_to_counts_basedir)
+    for j in range(1,len(counts)):
+        validate1=re.sub("de_genes.txt", "", listname[j])
+        v2=re.sub("all_counts_noZero_normalized","",counts[j])+basenames[j]
+        validate2=re.sub("counts","",v2)
+        if validate1==validate2:
+            print(counts[j])
+            print(os.path.normpath(DEOutPath+"/"+basenames[j]))
+            shutil.copyfile(counts[j], os.path.normpath(DEOutPath+"/"+basenames[j]))
+
 
 def create_bag(output_dir, update):
     """Create/Update and archive a BDBag from the contents of a passed-in directory."""
@@ -119,27 +143,24 @@ def generate_alignment_report(outdir, ergatis_repository, ergatis_pid):
     print(syscmd)
     os.system(syscmd)
 
-def generate_de_report(outdir, ergatis_repository, ergatis_pid, renameDE):
+def generate_de_report(outdir, ergatis_repository, ergatis_pid):
     # Remove redundant references and separators in path, if applicable
     outdir = os.path.normpath(outdir)
     ergatis_repository = os.path.normpath(ergatis_repository)
-    base_counts = os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/")
+    base_counts = os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/all_counts_noZero_normalized")
     print("In DE")
     #print(renameDE)
-    de_paths = [os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/*.counts.txt"), os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/*de_genes.txt")]
+    de_paths = [os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/*de_genes.txt")]
     #print(de_paths)
+    de_genes_files = de_paths[0]
+    print(de_genes_files)
     de_dir = os.path.join(outdir, "DE")
     if not os.path.isdir(de_dir):
         os.makedirs(de_dir)
     copy_files_to_dir(de_paths, [de_dir for i in de_paths])
-    ###Use rename.R to copy individual counts files and rename them 
-    file_list =copy_de_files(base_counts, de_dir, renameDE)
+    #file_list =copy_de_files(base_counts, de_dir, renameDE)
+    file_list = counts_copy(base_counts, de_genes_files, de_dir)
     counts_default = os.path.join(outdir, "all_counts.txt")
-    #de_counts_path = os.path.join(ergatis_repository, "deseq", ergatis_pid + "_differential_expression/i1/g*/all_counts")
-    #print(de_counts_path)
-    ###Find better way to copy the DE normalized counts file. Temp fix.
-    #de_syscmd = "cp "+ de_counts_path + " " + counts_default
-    #os.system(de_syscmd)
 
 
 def generate_ge_report(outdir, ergatis_repository, ergatis_pid):
