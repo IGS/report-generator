@@ -65,11 +65,11 @@ def copy_bam_files():
 def copy_cloud_files(outdir, ergatis_base, ergatis_pid):
    pass
 
-def copy_de_files(path_to_counts_basedir, DEPath, renameDE):
+#def copy_de_files(path_to_counts_basedir, DEPath, renameDE):
     ##Change to not use R script later and make it a independent function in python
-    count_cmd = "Rscript "+ renameDE + " " + path_to_counts_basedir + " " + DEPath
-    print(count_cmd)
-    os.system(count_cmd)
+    #count_cmd = "Rscript "+ renameDE + " " + path_to_counts_basedir + " " + DEPath
+    #print(count_cmd)
+    #os.system(count_cmd)
 
 def copy_files_to_dir(these_files, to_here):
     for i in range(len(these_files)):
@@ -120,12 +120,12 @@ def generate_all_counts(path_to_counts):
     print(all_counts_merge.head())
     return(all_counts_merge)
 
-def generate_all_reports(output_dir, ergatis_repository, ergatis_pid, renameDE):
+def generate_all_reports(output_dir, ergatis_repository, ergatis_pid):
     """Generate all possible reports."""
     only_fqc = generate_fastqc_report(output_dir, ergatis_repository, ergatis_pid)
     only_aln = generate_alignment_report(output_dir, ergatis_repository, ergatis_pid)
     only_ge = generate_ge_report(output_dir, ergatis_repository, ergatis_pid)
-    only_de = generate_de_report(output_dir, ergatis_repository, ergatis_pid, renameDE)
+    only_de = generate_de_report(output_dir, ergatis_repository, ergatis_pid)
 
 def generate_alignment_report(outdir, ergatis_repository, ergatis_pid):
     """
