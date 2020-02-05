@@ -93,8 +93,6 @@ def counts_copy(path_to_counts_basedir, DEfilePath,DEOutPath):
         validate1=re.sub("de_genes.txt", "", listname[j])
         v2=re.sub("all_counts_noZero_normalized","",counts[j])+basenames[j]
         validate2=re.sub("counts","",v2)
-        print(validate1)
-        print(validate2)
         if validate1==validate2:
             print(counts[j])
             print(os.path.normpath(DEOutPath+"/"+basenames[j]))
