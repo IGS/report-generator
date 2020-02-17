@@ -145,12 +145,12 @@ boxplot_df <- apply(boxplot_df,2, as.numeric)
 rownames(boxplot_df)<-rownames(out_vsd)
 mv<-melt(boxplot_df)
 
-boxplot1<-ggplot(mv, aes(x = mv$Var2, y = mv$value, color=mv$Var2)) + geom_boxplot()+labs(x = "", y= "log Normalized Counts", fill=" ")+scale_fill_discrete(name = "Samples")+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+ theme(legend.position="none")+coord_flip()
+boxplot1<-ggplot(mv, aes(x = mv$Var2, y = mv$value, color=mv$Var2)) + geom_boxplot()+labs(x = "", y= "Normalized Counts", fill=" ")+scale_fill_discrete(name = "Samples")+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+ theme(legend.position="none")+coord_flip()
 
 ggsave("Figure1.png", path = GEPathD, plot = boxplot1, height = 12, width = 10)
 
 
-title_wrap<-strwrap("Figure 1. Boxplots of log Normalized Counts: This shows the expression profile of normalized read counts for each sample. The line dividing the box represents the median of the data and top and bottom of the box shows the upper and lower quartiles respectively. The whiskers show the highest and lowest values, excluding outliers, which are show as dots.", width = 150, simplify = F)
+title_wrap<-strwrap("Figure 1. Boxplots of Normalized Counts: This shows the expression profile of normalized read counts for each sample. The line dividing the box represents the median of the data and top and bottom of the box shows the upper and lower quartiles respectively. The whiskers show the highest and lowest values, excluding outliers, which are show as dots.", width = 150, simplify = F)
 
 title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
 grid.arrange(boxplot1, top=textGrob(title_wrapped, gp=gpar(fontsize=11)))
@@ -159,6 +159,7 @@ grid.arrange(boxplot1, top=textGrob(title_wrapped, gp=gpar(fontsize=11)))
 
 ```{r displayDensity, echo=FALSE, fig.height=8, fig.width=12, message=FALSE, warning=FALSE}
 #\blandscape
+#using old var names. Change at some point.
 
 dF.lCPM<- data.frame(boxplot_df, check.names = FALSE, stringsAsFactors = FALSE)
 T.dF<-data.frame(t(dF.lCPM), keep.rownames=F, check.names = FALSE, stringsAsFactors = FALSE)
@@ -170,11 +171,11 @@ meltG<-melt(mergeGroups, id=c("Row.names", "keep.rownames", "V1", "V2", "V3"))
 DensityG<-data.frame(meltG$Row.names, meltG$V2, meltG$variable, as.numeric(as.character(meltG$value)))
 colnames(DensityG)<-c("SampleID","Group", "variable", "value")
 
-title_wrap<-strwrap("Figure 2. Density of normalized log counts: This shows expression profile of normalized read counts for each sample, colored by group. The X-axis is the log-CPM (counts per million), and the Y-axis is the density  across the read counts for each sample. Density plots visualise the distribution of data over a continuous interval or time period", width = 150, simplify = F)
+title_wrap<-strwrap("Figure 2. Density of normalized counts: This shows expression profile of normalized read counts for each sample, colored by group. The X-axis is DESeq normalized counts, and the Y-axis is the density  across the read counts for each sample. Density plots visualise the distribution of data over a continuous interval or time period", width = 150, simplify = F)
 
 title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
 DensityG<-na.omit(DensityG)
-density1<-ggplot(DensityG, aes(x=DensityG$value, group=DensityG$SampleID, color=Group)) + geom_density()+labs(x="logCPM", y="Density",fill="")+geom_hline(yintercept = 0)
+density1<-ggplot(DensityG, aes(x=DensityG$value, group=DensityG$SampleID, color=Group)) + geom_density()+labs(x="Normalized Counts", y="Density",fill="")+geom_hline(yintercept = 0)
 grid.arrange(density1, top=textGrob(title_wrapped, gp=gpar(fontsize=11)))
 ggsave("Figure2.png", path = GEPathD, plot = density1, height = 8, width = 12)
 
@@ -194,6 +195,7 @@ ha_type<-data.frame(map.all$Group)
 qc_passed<-match_IDs(scaled, map.all) 
 if (qc_passed == T) {
 EucDist<-as.matrix(dist((t(scaled)), method="euclidean"))
+col_dend=as.dendrogram(hclust(dist(t(scaled), method = "euclidean")))
 ha_type<-data.frame(map.all$Group)
 colnames(ha_type)<-"Group"
 ttbox<-melt(tbox, id=c("SampleID", "Group"))
@@ -231,11 +233,11 @@ ha_dynamic_str<-paste0('HeatmapAnnotation(df = data.frame(ha_type = ha_type), an
                    title_gp = gpar(fontsize = 10, fontface=2, fontfamily="Helvetica")), col = list(Group =c(', str_col, ')))')
 ha_types<-eval(parse(text=ha_dynamic_str))
 
-title_wrap<-strwrap("Figure 3. Sample clustering by Euclidean distance: This heatmap was computed by Euclidean distance of expression, based on normalized data (CPM). Color coding is by Euclidean distance and by group/condition. This figure can indicate the relationship between the samples and groups.", width = 150, simplify = F)
+title_wrap<-strwrap("Figure 3. Sample clustering by Euclidean distance: This heatmap was computed by Euclidean distance of expression, based on normalized data. Color coding is by Euclidean distance and by group/condition. This figure can indicate the relationship between the samples and groups.", width = 150, simplify = F)
 
 title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
 
-hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6), show_row_names = FALSE)
+hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6), show_row_names = FALSE, clustering_distance_columns = "euclidean", cluster_columns = col_dend)
 
 draw(hold_heatmap_1)
 }
@@ -253,7 +255,7 @@ invisible(dev.off())
 qc_passed<-match_IDs(scaled, map.all) 
 if (qc_passed == T) {
 pcor<-cor(scaled, use="complete.obs", method = "pearson")
-title_wrap<-strwrap("Figure 4. Sample clustering by Pearson co-efficient: This heatmap was computed by Pearson co-efficient of expression, based on normalized data (CPM). Color coding is by Pearson co-efficient and by group/condition. This figure can indicate the relationship between the samples and groups.", width = 150, simplify = F)
+title_wrap<-strwrap("Figure 4. Sample clustering by Pearson co-efficient: This heatmap was computed by Pearson co-efficient of expression, based on normalized data. Color coding is by Pearson co-efficient and by group/condition. This figure can indicate the relationship between the samples and groups.", width = 150, simplify = F)
 
 title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
 
@@ -460,6 +462,7 @@ topGenes<-scaled[rownames(DF.logCPM) %in% top299Gene, ]
 write.table(topGenes, file = paste0(GEPathD, "CPM_Top5percent.txt"), sep = "\t")
 scaled299<-scale(topGenes)
 EucDist299<-dist((t(scaled299)), method="euclidean")
+col_dend_top=as.dendrogram(hclust(dist(t(scaled299), method = "euclidean")))
 
 title_wrap<-strwrap("Figure 9. Sample clustering based on CPM: The heatmap illustrates the sample correlation computed from gene expression count values. It shows how well the samples from each group cluster based on gene expression counts.", width = 120, simplify = F)
 
@@ -514,7 +517,7 @@ if (qc_passed == T) {
     else
     {
       ha.melt<-data.frame(rowMeans(sorted_top))
-      ht1<- Heatmap(sorted_top, show_row_names = FALSE, name="scaledCPM", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=10), column_title_side = "top", top_annotation = ha_types, cluster_rows = FALSE, column_names_gp=gpar(fontsize=6))
+      ht1<- Heatmap(sorted_top, show_row_names = FALSE, name="scaledCPM", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=10), column_title_side = "top", top_annotation = ha_types, cluster_rows = FALSE, column_names_gp=gpar(fontsize=6), cluster_columns = col_dend_top)
     }
   }
   
