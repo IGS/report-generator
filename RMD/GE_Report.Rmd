@@ -116,7 +116,7 @@ write.table(logCPM, file = paste0(GEPathD,"4_logCPM_counts_all_samples.txt"), se
 
 #Normalizing with deseq
 condition <- factor(as.character(myinfo[,2]))
-cds <- newCountDataSet(allcounts_htseq, condition)
+cds <- newCountDataSet(no0, condition)
 cds <- estimateSizeFactors(cds)
 ###From v2b3 deseq.R
 if (sum(ifelse((data.frame(table(as.character(myinfo[,2])))$Freq < 2), 1, 0)) > 0){
