@@ -302,15 +302,19 @@ for(i in 1:length(unique(map.all$Group)))
   Samtemp<-list(tempSample$SampleID)
   samplecols<-rbind(samplecols, tempSample)
 }
+###to fix label coloring issue
+samplecols$order<-c(1:nrow(samplecols))
+samplecols<-samplecols[match(EDden$labels, samplecols$SampleID),]
+#samplecols<-samplecols[order(samplecols$order),]
+
 #Samexpr<-samplecols$SampleID
-edclust_dend<-myplclust(EDden, labels=samplecols$SampleID, lab.col=samplecols$color, hang = 0.01, cex=1,cex.main=1, cex.sub=1, main = "Figure 5. Sample clustering illustrated by a dendogram using euclidean distance computed from gene expression across samples.") 
+#changing labels=samplecols$SampleID 
+edclust_dend<-myplclust(EDden, labels=EDden$labels, lab.col=samplecols$color, hang = 0.01, cex=1,cex.main=1, cex.sub=1, main = "Figure 5. Sample clustering illustrated by a dendogram using euclidean distance computed from gene expression across samples.") 
 Pcorden<-cor(scaled, use="complete.obs", method = "pearson")
 pClust<-hclust(dist(Pcorden))
+samplecols<-samplecols[match(pClust$labels, samplecols$SampleID),]
+pclust_dend<-myplclust(pClust, labels=pClust$labels, lab.col=samplecols$color, hang = 0.01, cex=1,cex.main=1, cex.sub=1, main = "Figure 6. Sample clustering illustrated by a dendogram using pairwise correlation computed from gene expression across samples.")
 
-pclust_dend<-myplclust(pClust, labels=samplecols$SampleID, lab.col=samplecols$color, hang = 0.01, cex=1,cex.main=1, cex.sub=1, main = "Figure 6. Sample clustering illustrated by a dendogram using pairwise correlation computed from gene expression across samples.")
-
-#plot(EDden, font.main = 1, xlab="",sub="", main="Figure 5. Euclidean distance Dendrogram: The dendrogram was computed by Euclidean distance of expression, based on normalized data (CPM).")
-#plot(pClust, font.main = 1, xlab="",sub="", main="Figure 6. Pearson co-efficient Dendrogram: The dendrogram was computed by Pearson co-efficient of expression, based on normalized data (CPM).")
 }
 #
 ```
@@ -319,12 +323,14 @@ pclust_dend<-myplclust(pClust, labels=samplecols$SampleID, lab.col=samplecols$co
 #Save Heatmap as png
 eden_out_name = paste0(GEPathD, "/Figure_5_DE_Euc_dendrogram.png")
 png(eden_out_name, res=100, width = 14, height =8, units = "in")
-edclust_dend<-myplclust(EDden, labels=samplecols$SampleID, lab.col=samplecols$color, hang = 0.01, cex=1,cex.main=1, cex.sub=1, main = "Figure 5. Sample clustering illustrated by a dendogram using euclidean distance computed from gene expression across samples.") 
+edclust_dend<-myplclust(EDden, labels=EDden$labels, lab.col=samplecols$color, hang = 0.01, cex=1,cex.main=1, cex.sub=1, main = "Figure 5. Sample clustering illustrated by a dendogram using euclidean distance computed from gene expression across samples.") 
 invisible(dev.off())
+
+##changed from samplecols$ID to labels=EDden$labels
 
 pden_out_name = paste0(GEPathD, "/Figure_6_DE_PC_dendrogram.png")
 png(pden_out_name, res=100, width = 14, height =8, units = "in")
-pclust_dend<-myplclust(pClust, labels=samplecols$SampleID, lab.col=samplecols$color, hang = 0.01, cex=1,cex.main=1, cex.sub=1, main = "Figure 6. Sample clustering illustrated by a dendogram using pairwise correlation computed from gene expression across samples.")
+pclust_dend<-myplclust(pClust, labels=EDden$labels, lab.col=samplecols$color, hang = 0.01, cex=1,cex.main=1, cex.sub=1, main = "Figure 6. Sample clustering illustrated by a dendogram using pairwise correlation computed from gene expression across samples.")
 invisible(dev.off())
 ```
 \newpage
