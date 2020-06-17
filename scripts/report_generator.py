@@ -4,7 +4,15 @@ import subprocess
 import pandas
 from bdbag import bdbag_api
 from shutil import copy
+import bdbag_generator
+import rpy2
+import rpy2.robjects as robjects
+from rpy2.robjects import globalenv
+import pathlib
+from rpy2.robjects import pandas2ri
 
+pandas2ri.activate()
+#bindir = pathlib.Path(__file__).resolve().parent
 def main():
     parser = argparse.ArgumentParser( description='Report Generation Utility')
     parser.add_argument("-b", "--bdbag", dest="bdbag",help="Path to bdbag archive", metavar="BDBAG")
@@ -20,39 +28,41 @@ def main():
     parser.add_argument("-i", "--info", dest="info",help="Path to Info file", metavar="PATH")
     parser.add_argument("-m", "--mapping", dest="mapping",help="Path to mapping file", metavar="PATH")
 
-    parser.add_argument("-f", "--fqcwrapper", dest="fwrap",help="Path to fastQC wrapper script", metavar="PATH")
-    parser.add_argument("-w", "--alignwrapper", dest="awrap",help="Path to Alignment wrapper script", metavar="PATH")
-    parser.add_argument("-d", "--dewrapper", dest="dwrap",help="Path to DE wrapper script", metavar="PATH")
-    parser.add_argument("-g", "--gewrapper", dest="gwrap",help="Path to GE wrapper script", metavar="PATH")
-
+    #parser.add_argument("-f", "--fqcwrapper", dest="fwrap",help="Path to fastQC wrapper script", metavar="PATH")
+    #parser.add_argument("-w", "--alignwrapper", dest="awrap",help="Path to Alignment wrapper script", metavar="PATH")
+    #parser.add_argument("-d", "--dewrapper", dest="dwrap",help="Path to DE wrapper script", metavar="PATH")
+    #parser.add_argument("-g", "--gewrapper", dest="gwrap",help="Path to GE wrapper script", metavar="PATH")
+    parser.add_argument("-s", "--subset", dest="outlier",help="Outlier Analysis", action='store_true')
     args = parser.parse_args()
     #wrap_FQC="/usr/local/packages/report_generation/wrapper_FastQC.R"
-    if args.fwrap:
-        wrap_FQC=args.fwrap
-    else:
-        wrap_FQC="/home/apaala.chatterjee/RNA_Report/wrapper_FastQC.R"
+    #if args.fwrap:
+    #    wrap_FQC=args.fwrap
+    #else:
+    #    wrap_FQC="/home/apaala.chatterjee/RNA_Report/wrapper_FastQC.R"
 
-    if args.awrap:
-        wrap_ALN = args.awrap
-    elif not args.awrap and args.prok:
-        wrap_ALN = "/home/apaala.chatterjee/RNA_Report/wrapper_Alignment_prok.R"
-    else:
-        wrap_ALN = "/home/apaala.chatterjee/RNA_Report/wrapper_Alignment.R"
+    #if args.awrap:
+    #    wrap_ALN = args.awrap
+    #elif not args.awrap and args.prok:
+    #    wrap_ALN = "/home/apaala.chatterjee/RNA_Report/wrapper_Alignment_prok.R"
+    #else:
+    #    wrap_ALN = "/home/apaala.chatterjee/RNA_Report/wrapper_Alignment.R"
 
-    if args.gwrap:
-        wrap_GE = args.gwrap
-    elif not args.gwrap and args.mapping:
-        wrap_GE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_GE_mapping.R"
-    else:
-        wrap_GE="/home/apaala.chatterjee/RNA_Report/wrapper_GE.R"
+    #if args.gwrap:
+    #    wrap_GE = args.gwrap
+    #elif not args.gwrap and args.mapping:
+    #    wrap_GE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_GE_mapping.R"
+        #globalenv['mapf'] = args.mapping
+    #else:
+    #    wrap_GE="/home/apaala.chatterjee/RNA_Report/wrapper_GE.R"
 
-    if args.dwrap:
-        wrap_DE = args.dwrap
-    elif not args.dwrap and args.mapping:
-        wrap_DE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_DE_mapping.R"
-    else:
-        wrap_DE="/home/apaala.chatterjee/RNA_Report/wrapper_DE.R"
-
+    #if args.dwrap:
+    #    wrap_DE = args.dwrap
+    #elif not args.dwrap and args.mapping:
+    #    wrap_DE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_DE_mapping.R"
+    #else:
+    #    wrap_DE="/home/apaala.chatterjee/RNA_Report/wrapper_DE.R"
+    if args.mapping:
+        globalenv['mapf'] = args.mapping
     #wrap_ALN_prok="/home/apaala.chatterjee/RNA_Report/wrapper_Alignment_prok.R"
     #wrap_ALN= "/home/apaala.chatterjee/RNA_Report/wrapper_Alignment.R"
     #wrap_GE="/home/apaala.chatterjee/RNA_Report/wrapper_GE.R"
@@ -60,36 +70,44 @@ def main():
     #wrap_DE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_DE_mapping.R"
     #wrap_GE_mapping="/home/apaala.chatterjee/RNA_Report/wrapper_GE_mapping.R"
     counts_script="/usr/local/packages/report_generation/Generate_all_counts.R"
-    rpath="/usr/local/packages/r-3.4.0/bin/Rscript"
-
+    #rpath="./"
+    rpath = pathlib.Path(__file__).resolve().parent
+    print(rpath)
+    #copy(args.info, extracted_path)
     if args.bdbag and args.outdir and args.pname:
         extracted_path = extract_bag(args.bdbag, output_directory=args.outdir, project_name=args.pname)
         copy(args.info, extracted_path)
-
+        globalenv['outdir'] = extracted_path
+        globalenv['project_name'] = args.pname
+        globalenv['info_file'] = args.info
+        globalenv['rpath'] = str(rpath)
         if args.all:
-            wrap_dir = os.path.dirname(wrap_DE)
-            generate_all_reports(extracted_path, wrap_dir, rpath, args.pname, args.info, args.prok, args.mapping, args)
+            #wrap_dir = os.path.dirname(wrap_DE)
+            #generate_all_reports(extracted_path, wrap_dir, rpath, args.pname, args.info, args.prok, args.mapping, args)
+            generate_all_reports(extracted_path, rpath, args.pname, args.info, args.prok, args.mapping, args)
         else:
             if args.fqc:
-                generate_fastqc_report(extracted_path, wrap_FQC, rpath, args.pname, args.info)
-
+                #generate_fastqc_report(extracted_path, wrap_FQC, rpath, args.pname, args.info)
+                generate_fastqc_report(extracted_path, rpath, args.pname, args.info)
             if args.aln:
-                generate_alignment_report(extracted_path, wrap_ALN, rpath, args.pname, args.info)
-
+                #generate_alignment_report(extracted_path, wrap_ALN, rpath, args.pname, args.info)
+                generate_alignment_report(extracted_path, rpath, args.pname, args.info)
             if args.ge:
                 if args.mapping:
                     print("In mapping file GE")
-                    map_to_GE(extracted_path, wrap_GE_mapping, rpath, args.pname, args.info, args.mapping)
+                    #map_to_GE(extracted_path, wrap_GE_mapping, rpath, args.pname, args.info, args.mapping)
+                    map_to_GE(extracted_path, rpath, args.pname, args.info, args.mapping)
                 else:
-                    generate_ge_report(extracted_path, wrap_GE, rpath, args.pname, args.info)
-
+                    #generate_ge_report(extracted_path, wrap_GE, rpath, args.pname, args.info)
+                    generate_ge_report(extracted_path, rpath, args.pname, args.info)
             if args.de:
                 if args.mapping:
                     print("In mapping file DE")
-                    map_to_DE(extracted_path, wrap_DE_mapping, rpath, args.pname, args.info, args.mapping)
+                    #map_to_DE(extracted_path, wrap_DE_mapping, rpath, args.pname, args.info, args.mapping)
+                    map_to_DE(extracted_path, rpath, args.pname, args.info, args.mapping)
                 else:
-                    generate_de_report(extracted_path, wrap_DE, rpath, args.pname, args.info)
-
+                    #generate_de_report(extracted_path, wrap_DE, rpath, args.pname, args.info)
+                    generate_de_report(extracted_path, rpath, args.pname, args.info)
         if(args.update):
             project_outdir=os.path.join(args.outdir,args.pname)
             update_bag(project_outdir)
@@ -131,41 +149,42 @@ def generate_all_counts(path_to_counts):
     print(all_counts_merge.head())
     return(all_counts_merge)
 
-def generate_all_reports(extracted_path, wrappers_dir, rpath, project_name, info_file, prok, mapping_file, args=None):
+def generate_all_reports(extracted_path, rpath, project_name, info_file, prok, mapping_file, args=None):
     """Generate all possible reports.  Assumes all wrapper scripts are in the same directory."""
 
-    wrap_FQC = os.path.join(wrappers_dir, "wrapper_FastQC.R")
-    if args.fwrap:
-        wrap_FQC = args.fwrap
-    generate_fastqc_report(extracted_path, wrap_FQC, rpath, args.pname, args.info)
+    #wrap_FQC = os.path.join(wrappers_dir, "wrapper_FastQC.R")
+    #if args.fwrap:
+    #    wrap_FQC = args.fwrap
+    generate_fastqc_report(extracted_path, rpath, args.pname, args.info)
 
-    wrap_ALN = os.path.join(wrappers_dir, "wrapper_Alignment.R")
+    #wrap_ALN = os.path.join(wrappers_dir, "wrapper_Alignment.R")
     if prok:
-        wrap_ALN = os.path.join(wrappers_dir, "wrapper_Alignment_prok.R")
-    if args.awrap:
-        wrap_ALN = args.awrap
-    generate_alignment_report(extracted_path, wrap_ALN, rpath, args.pname, args.info)
+        generate_alignment_report(extracted_path, rpath, args.pname, args.info)
+    #    wrap_ALN = os.path.join(wrappers_dir, "wrapper_Alignment_prok.R")
+    #if args.awrap:
+    #    wrap_ALN = args.awrap
+    generate_alignment_report(extracted_path, rpath, args.pname, args.info)
 
     if mapping_file:
-        wrap_GE_mapping = os.path.join(wrappers_dir, "wrapper_GE_mapping.R")
-        wrap_DE_mapping = os.path.join(wrappers_dir, "wrapper_DE_mapping.R")
-        if args.gwrap:
-            wrap_GE_mapping = args.gwrap
-        if args.dwrap:
-            wrap_DE_mapping = args.dwrap
-        map_to_GE(extracted_path, wrap_GE_mapping, rpath, args.pname, args.info, args.mapping)
-        map_to_DE(extracted_path, wrap_DE_mapping, rpath, args.pname, args.info, args.mapping)
+        #wrap_GE_mapping = os.path.join(wrappers_dir, "wrapper_GE_mapping.R")
+        #wrap_DE_mapping = os.path.join(wrappers_dir, "wrapper_DE_mapping.R")
+        #if args.gwrap:
+        #    wrap_GE_mapping = args.gwrap
+        #if args.dwrap:
+        #    wrap_DE_mapping = args.dwrap
+        map_to_GE(extracted_path, rpath, args.pname, args.info, args.mapping)
+        map_to_DE(extracted_path, rpath, args.pname, args.info, args.mapping)
     else:
-        wrap_GE = os.path.join(wrappers_dir, "wrapper_GE.R")
-        wrap_DE = os.path.join(wrappers_dir, "wrapper_DE.R")
-        if args.gwrap:
-            wrap_GE = args.gwrap
-        if args.dwrap:
-            wrap_DE = args.dwrap
-        generate_ge_report(extracted_path, wrap_GE, rpath, args.pname, args.info)
-        generate_de_report(extracted_path, wrap_DE, rpath, args.pname, args.info)
+        #wrap_GE = os.path.join(wrappers_dir, "wrapper_GE.R")
+        #wrap_DE = os.path.join(wrappers_dir, "wrapper_DE.R")
+        #if args.gwrap:
+        #    wrap_GE = args.gwrap
+        #if args.dwrap:
+        #    wrap_DE = args.dwrap
+        generate_ge_report(extracted_path, rpath, args.pname, args.info)
+        generate_de_report(extracted_path, rpath, args.pname, args.info)
 
-def generate_alignment_report(outdir, wrapper, rpath, project_name, info_file):
+def generate_alignment_report(outdir, rpath, project_name, info_file):
     """
     Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file.
 
@@ -176,11 +195,18 @@ def generate_alignment_report(outdir, wrapper, rpath, project_name, info_file):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
-    except subprocess.CalledProcessError as e:
+        aln_rmd_cmd = '''
+        rmarkdown::render(paste0(rpath,"/Alignment_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_Alignment_Report.pdf', sep=''))
+        '''
+        print(aln_rmd_cmd)
+        robjects.r(aln_rmd_cmd)
+        #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
+        #subprocess.check_call(["Alignment_Report.Rmd", wrapper, project_name, outdir, info_file, outdir], shell = False)
+    #except subprocess.CalledProcessError as e:
+    except rpy2.rinterface.RRuntimeError as e: 
         print(e)
 
-def generate_de_report(outdir, wrapper, rpath, project_name, info_file):
+def generate_de_report(outdir, rpath, project_name, info_file):
     """
     Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file.
 
@@ -193,11 +219,16 @@ def generate_de_report(outdir, wrapper, rpath, project_name, info_file):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
-    except subprocess.CalledProcessError as e:
+        de_rmd_cmd = '''
+        rmarkdown::render(paste0(rpath,"/DE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_DE_Report.pdf', sep=''))
+            '''
+        robjects.r(de_rmd_cmd)
+        #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
+    #except subprocess.CalledProcessError as e:
+    except rpy2.rinterface.RRuntimeError as e:
         print(e)
 
-def generate_fastqc_report(outdir, wrapper, rpath, project_name, info_file):
+def generate_fastqc_report(outdir, rpath, project_name, info_file):
     """
     Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file.
 
@@ -205,15 +236,21 @@ def generate_fastqc_report(outdir, wrapper, rpath, project_name, info_file):
     """
     outdir = os.path.normpath(outdir)
     output_files = os.path.join(outdir, "FastQC_Outputs")
+    fqc = os.path.join(str(rpath), "FastQC_Report.Rmd")
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
-    except subprocess.CalledProcessError as e:
+        fqc_rmd_cmd = '''
+        rmarkdown::render(paste0(rpath, "/FastQC_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_FastQC_Report.pdf', sep=''))
+        '''
+        robjects.r(fqc_rmd_cmd)
+        #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
+    #except subprocess.CalledProcessError as e:
+    except rpy2.rinterface.RRuntimeError as e:
         print(e)
     #syscmd=rpath +" "+ wrap_FQC +" "+ args.pname +" "+ pdir +" " + args.info + " "+pdir
 
-def generate_ge_report(outdir, wrapper, rpath, project_name, info_file):
+def generate_ge_report(outdir, rpath, project_name, info_file):
     """
     Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file.
 
@@ -233,8 +270,13 @@ def generate_ge_report(outdir, wrapper, rpath, project_name, info_file):
             merged_counts = generate_all_counts(count_file_expected_path)
             merged_counts.to_csv(path_or_buf = all_count_path, header = True, sep = "\t", index = False)
         try:
-            subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
-        except subprocess.CalledProcessError as e:
+            ge_rmd_cmd = '''
+            rmarkdown::render(paste0(rpath,"/GE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_GE_Report.pdf', sep=''))
+            '''
+            robjects.r(ge_rmd_cmd)
+            #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
+        #except subprocess.CalledProcessError as e:
+        except rpy2.rinterface.RRuntimeError as e:
             print(e)
 
 def map_to_DE(outdir, wrapper, rpath, project_name, info_file, mappingf):
@@ -249,8 +291,13 @@ def map_to_DE(outdir, wrapper, rpath, project_name, info_file, mappingf):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir, mappingf], shell = False)
-    except subprocess.CalledProcessError as e:
+        de_rmd_cmd = '''
+        rmarkdown::render(paste0(rpath,"/DE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file, mappingf=mapf), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_DE_Report.pdf', sep=''))
+            '''
+        robjects.r(de_rmd_cmd)
+        #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir, mappingf], shell = False)
+    #except subprocess.CalledProcessError as e:
+    except rpy2.rinterface.RRuntimeError as e:    
         print(e)
 
 def map_to_GE(outdir, wrapper, rpath, project_name, info_file, mappingf):
@@ -266,8 +313,13 @@ def map_to_GE(outdir, wrapper, rpath, project_name, info_file, mappingf):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir, mappingf], shell = False)
-    except subprocess.CalledProcessError as e:
+        ge_rmd_cmd = '''
+        rmarkdown::render(paste0(rpath,"/GE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file, mappingf=mapf), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_GE_Report.pdf', sep=''))
+        '''
+        robjects.r(ge_rmd_cmd)
+        #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir, mappingf], shell = False)
+    #except subprocess.CalledProcessError as e:
+    except rpy2.rinterface.RRuntimeError as e:
         print(e)
 
 def update_bag(outdir):
