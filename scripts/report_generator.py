@@ -5,13 +5,13 @@ import pandas
 from bdbag import bdbag_api
 from shutil import copy
 import bdbag_generator
-import rpy2
-import rpy2.robjects as robjects
-from rpy2.robjects import globalenv
+#import rpy2
+#import rpy2.robjects as robjects
+#from rpy2.robjects import globalenv
 import pathlib
-from rpy2.robjects import pandas2ri
+#from rpy2.robjects import pandas2ri
 
-pandas2ri.activate()
+#pandas2ri.activate()
 #bindir = pathlib.Path(__file__).resolve().parent
 def main():
     parser = argparse.ArgumentParser( description='Report Generation Utility')
@@ -73,10 +73,10 @@ def main():
     if args.bdbag and args.outdir and args.pname:
         extracted_path = extract_bag(args.bdbag, output_directory=args.outdir, project_name=args.pname)
         copy(args.info, extracted_path)
-        globalenv['outdir'] = extracted_path
-        globalenv['project_name'] = args.pname
-        globalenv['info_file'] = args.info
-        globalenv['rpath'] = str(rpath)
+ #       globalenv['outdir'] = extracted_path
+ #       globalenv['project_name'] = args.pname
+ #       globalenv['info_file'] = args.info
+ #       globalenv['rpath'] = str(rpath)
         if args.all:
             #wrap_dir = os.path.dirname(wrap_DE)
             #generate_all_reports(extracted_path, wrap_dir, rpath, args.pname, args.info, args.prok, args.mapping, args)
