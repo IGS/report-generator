@@ -28,10 +28,6 @@ def main():
     parser.add_argument("-i", "--info", dest="info",help="Path to Info file", metavar="PATH")
     parser.add_argument("-m", "--mapping", dest="mapping",help="Path to mapping file", metavar="PATH")
 
-    #parser.add_argument("-f", "--fqcwrapper", dest="fwrap",help="Path to fastQC wrapper script", metavar="PATH")
-    #parser.add_argument("-w", "--alignwrapper", dest="awrap",help="Path to Alignment wrapper script", metavar="PATH")
-    #parser.add_argument("-d", "--dewrapper", dest="dwrap",help="Path to DE wrapper script", metavar="PATH")
-    #parser.add_argument("-g", "--gewrapper", dest="gwrap",help="Path to GE wrapper script", metavar="PATH")
     parser.add_argument("-s", "--subset", dest="outlier",help="Outlier Analysis", action='store_true')
     args = parser.parse_args()
     #wrap_FQC="/usr/local/packages/report_generation/wrapper_FastQC.R"
@@ -195,15 +191,16 @@ def generate_alignment_report(outdir, rpath, project_name, info_file):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        aln_rmd_cmd = '''
-        rmarkdown::render(paste0(rpath,"/Alignment_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_Alignment_Report.pdf', sep=''))
-        '''
-        print(aln_rmd_cmd)
-        robjects.r(aln_rmd_cmd)
-        #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
-        #subprocess.check_call(["Alignment_Report.Rmd", wrapper, project_name, outdir, info_file, outdir], shell = False)
-    #except subprocess.CalledProcessError as e:
-    except rpy2.rinterface.RRuntimeError as e: 
+        #aln_rmd_cmd = '''
+        #rmarkdown::render(paste0(rpath,"/Alignment_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_Alignment_Report.pdf', sep=''))
+        #'''
+        #print(aln_rmd_cmd)
+        #robjects.r(aln_rmd_cmd)
+        aln_path=str(rpath)+"/wrapper_Alignment.R"
+        aln_rmd=str(rpath)+"/Alignment_Report.Rmd"
+        subprocess.check_call(["Rscript",aln_path,aln_rmd, project_name, outdir, info_file, outdir], shell = False)
+    except subprocess.CalledProcessError as e:
+    #except rpy2.rinterface.RRuntimeError as e: 
         print(e)
 
 def generate_de_report(outdir, rpath, project_name, info_file):
@@ -219,13 +216,15 @@ def generate_de_report(outdir, rpath, project_name, info_file):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        de_rmd_cmd = '''
-        rmarkdown::render(paste0(rpath,"/DE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_DE_Report.pdf', sep=''))
-            '''
-        robjects.r(de_rmd_cmd)
-        #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
-    #except subprocess.CalledProcessError as e:
-    except rpy2.rinterface.RRuntimeError as e:
+        #de_rmd_cmd = '''
+        #rmarkdown::render(paste0(rpath,"/DE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_DE_Report.pdf', sep=''))
+        #    '''
+        #robjects.r(de_rmd_cmd)
+        de_path=str(rpath)+"/wrapper_DE.R"
+        de_rmd=str(rpath)+"/DE_Report.Rmd"
+        subprocess.check_call(["Rscript", de_path, de_rmd, project_name, outdir, info_file, outdir], shell = False)
+    except subprocess.CalledProcessError as e:
+    #except rpy2.rinterface.RRuntimeError as e:
         print(e)
 
 def generate_fastqc_report(outdir, rpath, project_name, info_file):
@@ -240,13 +239,16 @@ def generate_fastqc_report(outdir, rpath, project_name, info_file):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        fqc_rmd_cmd = '''
-        rmarkdown::render(paste0(rpath, "/FastQC_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_FastQC_Report.pdf', sep=''))
-        '''
-        robjects.r(fqc_rmd_cmd)
+        #fqc_rmd_cmd = '''
+        #rmarkdown::render(paste0(rpath, "/FastQC_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_FastQC_Report.pdf', sep=''))
+        #'''
+        #robjects.r(fqc_rmd_cmd)
+        f_path=str(rpath)+"/wrapper_FastQC.R"
+        f_rmd=str(rpath)+"/FastQC_Report.Rmd"
+        subprocess.check_call(["Rscript", f_path, f_rmd, project_name, outdir, info_file, outdir], shell = False)
         #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
-    #except subprocess.CalledProcessError as e:
-    except rpy2.rinterface.RRuntimeError as e:
+    except subprocess.CalledProcessError as e:
+    #except rpy2.rinterface.RRuntimeError as e:
         print(e)
     #syscmd=rpath +" "+ wrap_FQC +" "+ args.pname +" "+ pdir +" " + args.info + " "+pdir
 
@@ -270,13 +272,16 @@ def generate_ge_report(outdir, rpath, project_name, info_file):
             merged_counts = generate_all_counts(count_file_expected_path)
             merged_counts.to_csv(path_or_buf = all_count_path, header = True, sep = "\t", index = False)
         try:
-            ge_rmd_cmd = '''
-            rmarkdown::render(paste0(rpath,"/GE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_GE_Report.pdf', sep=''))
-            '''
-            robjects.r(ge_rmd_cmd)
+            #ge_rmd_cmd = '''
+            #rmarkdown::render(paste0(rpath,"/GE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_GE_Report.pdf', sep=''))
+            #'''
+            #robjects.r(ge_rmd_cmd)
+            ge_path=str(rpath)+"/wrapper_GE.R"
+            ge_rmd=str(rpath)+"/GE_Report.Rmd"
+            subprocess.check_call(["Rscript", ge_path, ge_rmd, project_name, outdir, info_file, outdir], shell = False)
             #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
-        #except subprocess.CalledProcessError as e:
-        except rpy2.rinterface.RRuntimeError as e:
+        except subprocess.CalledProcessError as e:
+        #except rpy2.rinterface.RRuntimeError as e:
             print(e)
 
 def map_to_DE(outdir, wrapper, rpath, project_name, info_file, mappingf):
@@ -291,13 +296,16 @@ def map_to_DE(outdir, wrapper, rpath, project_name, info_file, mappingf):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        de_rmd_cmd = '''
-        rmarkdown::render(paste0(rpath,"/DE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file, mappingf=mapf), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_DE_Report.pdf', sep=''))
-            '''
-        robjects.r(de_rmd_cmd)
+        #de_rmd_cmd = '''
+        #rmarkdown::render(paste0(rpath,"/DE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file, mappingf=mapf), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_DE_Report.pdf', sep=''))
+        #    '''
+        #robjects.r(de_rmd_cmd)
         #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir, mappingf], shell = False)
-    #except subprocess.CalledProcessError as e:
-    except rpy2.rinterface.RRuntimeError as e:    
+        de_path=str(rpath)+"/wrapper_DE.R"
+        de_rmd=str(rpath)+"/DE_Report.Rmd"
+        subprocess.check_call(["Rscript", de_path, de_rmd, project_name, outdir, info_file, outdir, mappingf], shell = False)
+    except subprocess.CalledProcessError as e:
+    #except rpy2.rinterface.RRuntimeError as e:    
         print(e)
 
 def map_to_GE(outdir, wrapper, rpath, project_name, info_file, mappingf):
@@ -313,13 +321,16 @@ def map_to_GE(outdir, wrapper, rpath, project_name, info_file, mappingf):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        ge_rmd_cmd = '''
-        rmarkdown::render(paste0(rpath,"/GE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file, mappingf=mapf), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_GE_Report.pdf', sep=''))
-        '''
-        robjects.r(ge_rmd_cmd)
+        #ge_rmd_cmd = '''
+        #rmarkdown::render(paste0(rpath,"/GE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file, mappingf=mapf), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_GE_Report.pdf', sep=''))
+        #'''
+        #robjects.r(ge_rmd_cmd)
+        ge_path=str(rpath)+"/wrapper_GE.R"
+        ge_rmd=str(rpath)+"/GE_Report.Rmd"
+        subprocess.check_call(["Rscript", ge_path, ge_rmd, project_name, outdir, info_file, outdir, mappingf], shell = False)
         #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir, mappingf], shell = False)
-    #except subprocess.CalledProcessError as e:
-    except rpy2.rinterface.RRuntimeError as e:
+    except subprocess.CalledProcessError as e:
+    #except rpy2.rinterface.RRuntimeError as e:
         print(e)
 
 def update_bag(outdir):
