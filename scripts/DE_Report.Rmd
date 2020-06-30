@@ -299,7 +299,7 @@ for(i in 1: length(DeFiles))
   l1<-levels(heatmp_a$Group)[1]
   l2<-levels(heatmp_a$Group)[2]
   df=data.frame(heatmp_a=heatmp_a)      
-  string_command<-paste0('HeatmapAnnotation(df, annotation_legend_param = list(title="Condition", title_gp = gpar(fontsize = 10, fontface=2, fontfamily="Helvetica")), col=list(Group=c(',l1,'="darkgreen",', l2, '="blue")))')
+  string_command<-paste0('HeatmapAnnotation(df=df, annotation_legend_param = list(title="Condition", title_gp = gpar(fontsize = 10, fontface=2, fontfamily="Helvetica")),col=list(Group=c(',l1,'="darkgreen",', l2, '="blue")))')
   heatmap_a<-eval(parse(text=string_command))
   maxRD<- max(Hmap_LFC$DEnoInf.LFC, na.rm = T)
   minRD<-min(Hmap_LFC$DEnoInf.LFC, na.rm= T)
