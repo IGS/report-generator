@@ -64,7 +64,7 @@ library(edgeR)
 library(ggdendro)
 library(ggpubr)
 library(VennDiagram)
-library(magick)
+#library(magick)
 library(png)
 ```
 

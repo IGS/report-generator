@@ -45,7 +45,7 @@ library(gridExtra)
 library(ggplot2)
 library(png)
 library(dplyr)
-library(magick)
+#library(magick)
 ```
 
 
