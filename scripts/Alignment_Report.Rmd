@@ -53,6 +53,7 @@ library(dplyr)
  
 ###add legen contd. to all table parts
 direc=unlist(params$pathd)
+dir.create(file.path(direc, "/AlignmentFiles/"), showWarnings = FALSE)
 setwd(direc)
 fn=paste0(direc,"/Summary.txt")
 info<-unlist(params$infof)

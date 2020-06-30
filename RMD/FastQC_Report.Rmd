@@ -51,6 +51,7 @@ direc=unlist(params$pathd)
 ```{r grid, echo=FALSE, fig.show='hide', warning=FALSE}
 setwd(direc)
 filen<-"Summary.txt"
+dir.create(file.path(direc, "/FastQC_Files/"), showWarnings = FALSE)
 info<-unlist(params$infof)
 #info="/Users/achatterjee/XMMCL_2018.samples.info"
 myinfo <- data.frame(read.table(info, check.names=FALSE))
