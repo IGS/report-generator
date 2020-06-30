@@ -209,7 +209,7 @@ def generate_fastqc_report(outdir, ergatis_repository, ergatis_pid):
     print(fqc_path)
     dir_list = ["FastQC_Files", "FastQC_Files/KmerProfiles", "FastQC_Files/BaseQuality", "FastQC_Files/adapter_content", "FastQC_Files/duplication_levels", "FastQC_Files/per_base_n_content", "FastQC_Files/per_base_sequence_content", "FastQC_Files/per_sequence_gc_content", "FastQC_Files/per_sequence_quality", "FastQC_Files/per_tile_quality", "FastQC_Files/sequence_length_distribution"]
 
-    extension_list = ["*_sequence.kmer_profiles.png", "*_base_quality.png", "*_sequence.adapter_content.png", "*_sequence.duplication_levels.png", "*_sequence.per_base_n_content.png", "*_sequence.per_base_sequence_content.png", "*_sequence.per_sequence_gc_content.png", "*_sequence.per_sequence_quality.png", "*_sequence.per_tile_quality.png", "*_sequence.sequence_length_distribution.png"]
+    extension_list = ["*.kmer_profiles.png", "*_base_quality.png", "*.adapter_content.png", "*.duplication_levels.png", "*.per_base_n_content.png", "*.per_base_sequence_content.png", "*.per_sequence_gc_content.png", "*.per_sequence_quality.png", "*.per_tile_quality.png", "*.sequence_length_distribution.png"]
 
     copy_to = ["FastQC_Files/KmerProfiles", "FastQC_Files/BaseQuality", "FastQC_Files/adapter_content", "FastQC_Files/duplication_levels", "FastQC_Files/per_base_n_content", "FastQC_Files/per_base_sequence_content", "FastQC_Files/per_sequence_gc_content", "FastQC_Files/per_sequence_quality", "FastQC_Files/per_tile_quality", "FastQC_Files/sequence_length_distribution"]
 
