@@ -219,9 +219,7 @@ def generate_de_report(outdir, rpath, project_name, info_file):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        de_rmd_cmd = '''
-        rmarkdown::render(paste0(rpath,"/DE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_DE_Report.pdf', sep=''))
-            '''
+        de_rmd_cmd = '''rmarkdown::render(paste0(rpath,"/DE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_DE_Report.pdf', sep=''))'''
         robjects.r(de_rmd_cmd)
         #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
     #except subprocess.CalledProcessError as e:
@@ -240,9 +238,7 @@ def generate_fastqc_report(outdir, rpath, project_name, info_file):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        fqc_rmd_cmd = '''
-        rmarkdown::render(paste0(rpath, "/FastQC_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_FastQC_Report.pdf', sep=''))
-        '''
+        fqc_rmd_cmd = '''rmarkdown::render(paste0(rpath, "/FastQC_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_FastQC_Report.pdf', sep=''))'''
         robjects.r(fqc_rmd_cmd)
         #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
     #except subprocess.CalledProcessError as e:
@@ -270,9 +266,7 @@ def generate_ge_report(outdir, rpath, project_name, info_file):
             merged_counts = generate_all_counts(count_file_expected_path)
             merged_counts.to_csv(path_or_buf = all_count_path, header = True, sep = "\t", index = False)
         try:
-            ge_rmd_cmd = '''
-            rmarkdown::render(paste0(rpath,"/GE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_GE_Report.pdf', sep=''))
-            '''
+            ge_rmd_cmd = '''rmarkdown::render(paste0(rpath,"/GE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_GE_Report.pdf', sep=''))'''
             robjects.r(ge_rmd_cmd)
             #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
         #except subprocess.CalledProcessError as e:
@@ -291,9 +285,7 @@ def map_to_DE(outdir, wrapper, rpath, project_name, info_file, mappingf):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        de_rmd_cmd = '''
-        rmarkdown::render(paste0(rpath,"/DE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file, mappingf=mapf), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_DE_Report.pdf', sep=''))
-            '''
+        de_rmd_cmd = '''rmarkdown::render(paste0(rpath,"/DE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file, mappingf=mapf), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_DE_Report.pdf', sep=''))'''
         robjects.r(de_rmd_cmd)
         #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir, mappingf], shell = False)
     #except subprocess.CalledProcessError as e:
@@ -313,9 +305,7 @@ def map_to_GE(outdir, wrapper, rpath, project_name, info_file, mappingf):
     if not os.path.isdir(output_files):
         os.makedirs(output_files)
     try:
-        ge_rmd_cmd = '''
-        rmarkdown::render(paste0(rpath,"/GE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file, mappingf=mapf), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_GE_Report.pdf', sep=''))
-        '''
+        ge_rmd_cmd = '''rmarkdown::render(paste0(rpath,"/GE_Report.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file, mappingf=mapf), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_GE_Report.pdf', sep=''))'''
         robjects.r(ge_rmd_cmd)
         #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir, mappingf], shell = False)
     #except subprocess.CalledProcessError as e:
