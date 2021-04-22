@@ -333,7 +333,9 @@ ggsave("Figure3.png", path = newimg, plot = hold_plot3, height = 8, width = 12)
 pmapped<-mystring$Percent.Mapped.Reads
 percentmapped<-data.frame(myinfo[,1], myinfo[,2], pmapped)
 
-pmappedC<-ggplot(stack(percentmapped), aes(x= percentmapped$myinfo...2., y= percentmapped$pmapped))+geom_boxplot( color="darkred")+labs(x = "", y= "Percent Mapped Reads")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1))
+#pmappedC<-ggplot(stack(percentmapped), aes(x= percentmapped$myinfo...2., y= percentmapped$pmapped))+geom_boxplot( color="darkred")+labs(x = "", y= "Percent Mapped Reads")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1))
+
+pmappedC<-ggplot((percentmapped), aes(x= percentmapped$myinfo...2., y= percentmapped$pmapped))+geom_boxplot( color="darkred")+labs(x = "", y= "Percent Mapped Reads")+theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1))
 
 title_wrap<-strwrap("Figure 4. Percent Mapped Reads: The boxplot illustrates the percentage of mapped reads for all samples in each group. This figure can highlight the differences in how reads map in different groups.", width = 140, simplify = F)
 
