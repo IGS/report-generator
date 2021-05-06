@@ -453,7 +453,7 @@ ggsave("Figure8.png", path = GEPathD, plot = hold_rel_rpkm, height = 8, width = 
 #\elandscape
 ```
 
-```{r geneHeatmap, echo=FALSE, warning=FALSE, fig.width=10, fig.height=12}
+```{r geneHeatmap, echo=FALSE, warning=FALSE, fig.width=10, fig.height=12,results='hide'}
 dfCPM<-data.frame(t(scaled), check.names = FALSE)
 sdCPM<-sapply(dfCPM, sd, na.rm = FALSE)
 df.sd<-data.frame(sdCPM)
@@ -537,7 +537,7 @@ if (qc_passed == T) {
 ht2<-Heatmap(data.frame(ha.melt$Mean), cluster_rows = FALSE, width = 0.25, show_heatmap_legend = FALSE, 
              show_row_names = FALSE, show_column_names = FALSE, col = colorRamp2(c(minR, maxR), c("gray", "pink")))
 htlist=ht1 +  ht2
-draw(htlist)
+#draw(htlist)
 }
 ```
 
