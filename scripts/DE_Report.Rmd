@@ -137,13 +137,15 @@ for(k in 1:length(DeFiles))
     comparision<-names(comp_temp)[6]
     names(comp_temp)[6]<-"LFC"
   }
-  testcomp<-comp_temp[comp_temp$FDR<FDRc, ]
-  Fcomp<-testcomp[testcomp$LFC >LFCc | testcomp$LFC< -LFCc, ]
+  testcomp<-comp_temp[comp_temp$FDR<=FDRc, ]
+  Fcomp<-testcomp[testcomp$LFC >=LFCc | testcomp$LFC<= -LFCc, ]
   DEInf<-Fcomp[order(Fcomp$Read.Count.All), ]
-      p10comp<-(nrow(DEInf)*10)/100
-      p10compdf<-DEInf[0:p10comp,]
-      cutoff<-mean(range(p10compdf$Read.Count.All))
-      Fcomp<-DEInf[DEInf$Read.Count.All > cutoff, ]
+  ###changed from Fcomp to comp temp    
+  p10comp<-(nrow(comp_temp)*10)/100
+      p10compdf<-comp_temp[0:p10comp,]
+      cutoff<-floor(mean(range(p10compdf$Read.Count.All)))
+      ##rounded value instead of raw for counts
+      Fcomp<-DEInf[round(DEInf$Read.Count.All) >= cutoff, ]
   up<-sum(Fcomp$LFC >0)
   down<-sum(Fcomp$LFC <0)
   total<-up+down
@@ -241,9 +243,11 @@ for(i in 1: length(DeFiles))
   DEInf<-read.table(DeFiles[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   DECnts<-read.table(DEcounts[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(DEInf)[6]<-"LFC"
-  DEInf<-DEInf[DEInf$FDR<FDRc, ]
-  DEInf<-DEInf[DEInf$LFC >LFCc | DEInf$LFC< -LFCc, ]
+  DEInf<-DEInf[DEInf$FDR<=FDRc, ]
+  DEInf<-DEInf[DEInf$LFC >=LFCc | DEInf$LFC<= -LFCc, ]
   DEInf<-DEInf[order(DEInf$Read.Count.All), ]
+  
+  ###Do I need to change this block? commenting for now May 6 2021.
   p10comp<-(nrow(DEInf)*10)/100
   p10compdf<-DEInf[0:p10comp,]
   if(nrow(p10compdf)>1){
@@ -252,7 +256,7 @@ for(i in 1: length(DeFiles))
     cutoff<-mean(range(DEInf$Read.Count.All))
   }
 
-  DEInf<-DEInf[DEInf$Read.Count.All > cutoff, ]
+  DEInf<-DEInf[DEInf$Read.Count.All >= cutoff, ]
   DEnoInf<-DEInf
   
   if(nrow(DEnoInf)>=2)
