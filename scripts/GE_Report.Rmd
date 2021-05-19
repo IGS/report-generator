@@ -128,8 +128,8 @@ if (sum(ifelse((data.frame(table(as.character(myinfo[,2])))$Freq < 2), 1, 0)) > 
   #cds <- estimateDispersions(cds, method="pooled", sharingMode="fit-only", fitType="local")
   cds <- estimateDispersions(cds)
 }
-out <- cbind(rownames(fData(cds)), fData(cds))
-colnames(out) <- c("ID", colnames(fData(cds)))
+out <- cbind(rownames(assay(cds)), assay(cds))
+colnames(out) <- c("ID", colnames(assay(cds)))
 write.table(out, file = paste0(GEPathD,"5_dispersion_counts.tsv"), na="NA", sep="\t", quote=F, row.names=F)
 vsd <- varianceStabilizingTransformation(cds)
 out_vsd <- cbind(rownames(exprs(vsd)), exprs(vsd))
