@@ -116,13 +116,17 @@ write.table(logCPM, file = paste0(GEPathD,"4_logCPM_counts_all_samples.txt"), se
 
 #Normalizing with deseq
 condition <- factor(as.character(myinfo[,2]))
-cds <- newCountDataSet(no0, condition)
+colData <- data.frame(row.names = colnames(no0), condition)
+cds <-DESeqDataSetFromMatrix(no0,DataFrame(condition), design = ~ condition) 
+#cds <- newCountDataSet(no0, condition)
 cds <- estimateSizeFactors(cds)
 ###From v2b3 deseq.R
 if (sum(ifelse((data.frame(table(as.character(myinfo[,2])))$Freq < 2), 1, 0)) > 0){
-  cds <- estimateDispersions(cds, method="blind", sharingMode="fit-only", fitType="local")
+  #cds <- estimateDispersions(cds, method="blind", sharingMode="fit-only", fitType="local")
+  cds <- estimateDispersions(cds)
 } else {
-  cds <- estimateDispersions(cds, method="pooled", sharingMode="fit-only", fitType="local")
+  #cds <- estimateDispersions(cds, method="pooled", sharingMode="fit-only", fitType="local")
+  cds <- estimateDispersions(cds)
 }
 out <- cbind(rownames(fData(cds)), fData(cds))
 colnames(out) <- c("ID", colnames(fData(cds)))
