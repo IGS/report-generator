@@ -548,6 +548,6 @@ htlist=ht1 +  ht2
 ```{r pair, echo=FALSE, warning=FALSE, fig.width=10, fig.height=12}
 if(nrow(t(cpmAllCounts))<=6)
 {
-  pairs(scaled,pch=20, cex.main=0.75,main="Figure 10. Scatterplots: Matrix of scatterplots comparing all samples")
+  pairs(scaled,pch=20, cex.main=0.75,main="Figure 9. Scatterplots: Matrix of scatterplots comparing all samples")
 }
 ```
