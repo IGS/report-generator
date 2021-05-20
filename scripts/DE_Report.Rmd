@@ -75,6 +75,7 @@ path=direc
 setwd(direc)
 infofile=unlist(params$infof)
 DEpath<-paste0(path, "DE/")
+filter_de_path=paste0(path,"/test_summary.txt")
 DeFiles<-list.files(DEpath, pattern = ".txt", full.names = TRUE)
 FDRc<-0.05
 LFCc<-1
@@ -103,6 +104,8 @@ match_IDs<-function(from_counts, from_info){
 ```{r table, echo=FALSE, warning=FALSE, fig.show='hide', message = FALSE}
 DEpath<-paste0(path, "/DE/")
 DECountPath<-paste0(path, "/DE/")
+filtde_table=read.table(filter_de_path, check.names=FALSE, as.is = TRUE, header = T, blank.lines.skip = TRUE, sep="\t")
+
 DeFiles<-list.files(DEpath, pattern = "de_genes.txt", full.names = TRUE)
 table_DE<-data.frame()
 comp_names<-(basename(DeFiles))
@@ -163,7 +166,8 @@ table_DE$Total<-tot
 
 mytheme <- gridExtra::ttheme_default(core = list(fg_params=list(cex = 0.5, fontface="plain")), colhead = list(fg_params=list(cex = 0.5, fontface="bold")),rowhead = list(fg_params=list(cex = 0.5, fontface="bold")))
 
-De_table_final<-tableGrob(table_DE, theme=mytheme)
+#De_table_final<-tableGrob(table_DE, theme=mytheme)
+De_table_final<-tableGrob(filtde_table, theme=mytheme)
 save_table<-grid.arrange(De_table_final, top=textGrob("Summary of differentially expressed genes for each comparison based on filter cutoffs of FDR <= 0.05 and LFC >= +/- 1", gp=gpar(fontsize=9)))
 
 h2 <- grobHeight(De_table_final)
