@@ -229,8 +229,8 @@ posINFfc<-max(columnifc, na.rm = T)
 columnifc <- columnIfc[which(columnIfc > -Inf)]
 negINFfc<-min(columnifc, na.rm = T)
 DEInf$FC[DEInf$FC=="Inf"]<-posINFfc
-
-RepINF<-data.frame(DEInf$Read.Count.All, DEInf$LFC, DEInf$p.Value)
+####pval->fdr may 21
+RepINF<-data.frame(DEInf$Read.Count.All, DEInf$LFC, DEInf$FDR)
 colnames(RepINF)<-c("baseMean", "log2FoldChange", "padj")
 
 maPlot<-ggmaplot(RepINF, genenames = NULL, top = 0, palette = c("#B31B21", "#1465AC", "darkgray"),fdr = 0.05, fc = 2, size=0.4, ggtheme = ggplot2::theme_minimal(), ylab = comparision, font.legend =c("bold", 16))+theme(axis.text=element_text(size=16), axis.title =element_text(size=18))
@@ -337,13 +337,11 @@ MA_images <- list.files(DEOut, pattern = "_MA_images.png", full.names = TRUE)
 ```
 \newpage
 \begin{center}
+
 Figure 1. DE Heatmaps: This set of figures illustrate the clustering for each
 comparison of interest based on the Gene Expression Counts and Log Fold Change
 (LFC) for the Differentially Expressed Genes (DEGs). Columns correspond to
-samples and rows correspond to genes. Count values are represented by graded
-change in colors. Scale bar represents a graded change in LFC with
-pink = higher expression and gray = lower expression. Gene expression values
-come from either DESeq/DESeq2 normalized counts.
+samples and rows correspond to genes. Scale bar represents a graded change in LFC where pink is higher LFC, gray is lower LFC. Gene expression valuescome from  DESeq/DESeq2 normalized counts.
 
 \end{center}
 ```{r Hmapdisp, echo=FALSE, warning=FALSE, message = FALSE, fig.height=8, fig.width=12}
