@@ -161,6 +161,11 @@ def generate_de_report(outdir, ergatis_repository, ergatis_pid):
     #file_list =copy_de_files(base_counts, de_dir, renameDE)
     file_list = counts_copy(base_counts, de_genes_files, de_dir)
     counts_default = os.path.join(outdir, "all_counts.txt")
+    filter_de_dir=os.path.join(ergatis_repository,"filter_deseq",ergatis_pid+"_filter_de/i1/g1/*_summary.txt")
+    print(filter_de_dir)
+    syscmd = "cp " + filter_de_dir + " " + outdir+"/test_summary.txt"
+    print(syscmd)
+    os.system(syscmd)
 
 
 def generate_ge_report(outdir, ergatis_repository, ergatis_pid):
