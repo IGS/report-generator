@@ -247,14 +247,16 @@ DEcounts<-list.files(DECountPath, pattern = ".counts$", full.names = TRUE)
 for(i in 1: length(DeFiles))
 {
   DEInf<-read.table(DeFiles[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
+  forprop<-DEInf[order(DEInf$Read.Count.All), ]
   DECnts<-read.table(DEcounts[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(DEInf)[6]<-"LFC"
-  DEInf<-DEInf[DEInf$FDR<FDRc, ]
+  DEInf<-DEInf[DEInf$FDR<=FDRc, ]
   DEInf<-DEInf[DEInf$LFC >=LFCc | DEInf$LFC<= -LFCc, ]
   DEInf<-DEInf[order(DEInf$Read.Count.All), ]
   
+  
   ###Do I need to change this block? commenting for now May 6 2021.
-  p10comp<-(nrow(DEInf)*10)/100
+  p10comp<-(nrow(forprop)*10)/100
   p10compdf<-DEInf[0:p10comp,]
   if(nrow(p10compdf)>1){
     cutoff<-mean(range(p10compdf$Read.Count.All))
@@ -262,8 +264,9 @@ for(i in 1: length(DeFiles))
   }else {
     cutoff<-mean(range(DEInf$Read.Count.All))
   }
-
-  #DEInf<-DEInf[DEInf$Read.Count.All >= cutoff, ]
+  cutoffdf=forprop[p10comp,]
+  cutoff=cutoffdf$Read.Count.All
+  DEInf<-DEInf[DEInf$Read.Count.All >= cutoff, ]
   DEnoInf<-DEInf
   
   if(nrow(DEnoInf)>=2)
@@ -319,8 +322,8 @@ for(i in 1: length(DeFiles))
   resort<-Filtered_norm[match(rownames(Hmap_LFC), rownames(Filtered_norm)),]
   resort<-resort[,order(match(paste(colnames(resort)), paste(comp_sampleList$V1)))]
   haDE.h<-Heatmap(data.frame(Hmap_LFC$DEnoInf.LFC), cluster_rows = FALSE, width = 0.25, show_heatmap_legend = FALSE, show_row_names = FALSE, show_column_names = FALSE, col = colorRamp2(c(minRD, maxRD), c("gray", "pink")))
-  hmap_plot<- Heatmap(resort, show_row_names = FALSE, column_names_gp = gpar(fontsize = 6), name="ScaledCPM", column_title_gp = gpar(fontsize=6), column_title_side = "bottom", top_annotation = heatmap_a, row_names_gp = gpar(fontsize = 2), cluster_rows = FALSE)
-  print(paste0("Size:",nrow(resort)))
+  hmap_plot<- Heatmap(resort, show_row_names = FALSE, column_names_gp = gpar(fontsize = 6), name="ScaledCPM", column_title_gp = gpar(fontsize=6), column_title_side = "bottom", top_annotation = heatmap_a, row_names_gp = gpar(fontsize = 2), cluster_rows = FALSE,row_title=paste0("Size:",nrow(resort)," RC:",cutoff))
+  #print(paste0("Size:",nrow(resort)))
   htlistDE=hmap_plot +  haDE.h
   file_name = paste(DEOut,i, "_Hmap_images.png", sep="")
   png(file_name,width = 7, height = 8, units = 'in', res = 600)
