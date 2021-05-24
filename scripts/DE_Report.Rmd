@@ -186,7 +186,7 @@ gtree1 <- gTree(children=gList(De_table_final, title_tree))
 #ggsave(gt1, path = newimg, width = 8, height = 10, filename = paste0("t1_1_table1.png"))
   
   
-ggsave(gtree1, width = 8, height = 10, path =DEOut , filename = paste0("DE_table.png"))
+#ggsave(gtree1, width = 8, height = 10, path =DEOut , filename = paste0("DE_table.png"))
 ```
 \newpage
 ```{r disp1, fig.show='asis', echo=FALSE, warning=FALSE, message = FALSE}
@@ -249,7 +249,7 @@ for(i in 1: length(DeFiles))
   DEInf<-read.table(DeFiles[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   DECnts<-read.table(DEcounts[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(DEInf)[6]<-"LFC"
-  DEInf<-DEInf[DEInf$FDR<=FDRc, ]
+  DEInf<-DEInf[DEInf$FDR<FDRc, ]
   DEInf<-DEInf[DEInf$LFC >=LFCc | DEInf$LFC<= -LFCc, ]
   DEInf<-DEInf[order(DEInf$Read.Count.All), ]
   
@@ -258,11 +258,12 @@ for(i in 1: length(DeFiles))
   p10compdf<-DEInf[0:p10comp,]
   if(nrow(p10compdf)>1){
     cutoff<-mean(range(p10compdf$Read.Count.All))
+    #cutoff<-mean(range(DEInf$Read.Count.All))
   }else {
     cutoff<-mean(range(DEInf$Read.Count.All))
   }
 
-  DEInf<-DEInf[DEInf$Read.Count.All >= cutoff, ]
+  #DEInf<-DEInf[DEInf$Read.Count.All >= cutoff, ]
   DEnoInf<-DEInf
   
   if(nrow(DEnoInf)>=2)
@@ -319,7 +320,7 @@ for(i in 1: length(DeFiles))
   resort<-resort[,order(match(paste(colnames(resort)), paste(comp_sampleList$V1)))]
   haDE.h<-Heatmap(data.frame(Hmap_LFC$DEnoInf.LFC), cluster_rows = FALSE, width = 0.25, show_heatmap_legend = FALSE, show_row_names = FALSE, show_column_names = FALSE, col = colorRamp2(c(minRD, maxRD), c("gray", "pink")))
   hmap_plot<- Heatmap(resort, show_row_names = FALSE, column_names_gp = gpar(fontsize = 6), name="ScaledCPM", column_title_gp = gpar(fontsize=6), column_title_side = "bottom", top_annotation = heatmap_a, row_names_gp = gpar(fontsize = 2), cluster_rows = FALSE)
-  
+  print(paste0("Size:",nrow(resort)))
   htlistDE=hmap_plot +  haDE.h
   file_name = paste(DEOut,i, "_Hmap_images.png", sep="")
   png(file_name,width = 7, height = 8, units = 'in', res = 600)
@@ -422,7 +423,7 @@ if (comp ==2)
 {
   comp1<-read.table(DeFiles[1], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(comp1)[6]<-"LFC"
-  testcomp1<-comp1[comp1$FDR<FDRc, ]
+  testcomp1<-comp1[comp1$FDR<=FDRc, ]
   Fcomp1<-testcomp1[testcomp1$LFC >LFCc | testcomp1$LFC< -LFCc, ]
   sortcomp1<-comp1[order(comp1$Read.Count.All), ]
   p10comp1<-(nrow(sortcomp1)*10)/100
