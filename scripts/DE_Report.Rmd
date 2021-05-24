@@ -324,7 +324,7 @@ for(i in 1: length(DeFiles))
   resort<-resort[,order(match(paste(colnames(resort)), paste(comp_sampleList$V1)))]
   haDE.h<-Heatmap(data.frame(Hmap_LFC$DEnoInf.LFC), cluster_rows = FALSE, width = 0.25, show_heatmap_legend = FALSE, show_row_names = FALSE, show_column_names = FALSE, col = colorRamp2(c(minRD, maxRD), c("gray", "pink")))
   hmap_plot<- Heatmap(resort, show_row_names = FALSE, column_names_gp = gpar(fontsize = 6), name="ScaledCPM", column_title_gp = gpar(fontsize=6), column_title_side = "bottom", top_annotation = heatmap_a, row_names_gp = gpar(fontsize = 2), cluster_rows = FALSE)
-  print(paste0("Size:",nrow(resort)))
+  #print(paste0("Size:",nrow(resort)))
   htlistDE=hmap_plot +  haDE.h
   file_name = paste(DEOut,i, "_Hmap_images.png", sep="")
   png(file_name,width = 7, height = 8, units = 'in', res = 600)
@@ -334,7 +334,10 @@ for(i in 1: length(DeFiles))
   }
   }
 }
+
+###add read count percentile to MAplot
 ```
+
 
 ```{r imagesplots, echo=FALSE, warning=FALSE, fig.show='hide', message = FALSE, include=FALSE}
 Heat_images<-list.files(DEOut, pattern = "_Hmap_images.png", full.names = TRUE)
