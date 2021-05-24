@@ -186,7 +186,7 @@ gtree1 <- gTree(children=gList(De_table_final, title_tree))
 #ggsave(gt1, path = newimg, width = 8, height = 10, filename = paste0("t1_1_table1.png"))
   
   
-#ggsave(gtree1, width = 8, height = 10, path =DEOut , filename = paste0("DE_table.png"))
+ggsave(gtree1, width = 8, height = 10, path =DEOut , filename = paste0("DE_table.png"))
 ```
 \newpage
 ```{r disp1, fig.show='asis', echo=FALSE, warning=FALSE, message = FALSE}
