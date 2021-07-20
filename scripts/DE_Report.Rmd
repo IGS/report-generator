@@ -386,7 +386,8 @@ if(comp >=3)
   randC<-sample.int(comp, 3)
   comp1<-read.table(DeFiles[randC[1]], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(comp1)[6]<-"LFC"
-  testcomp1<-comp1[comp1$FDR<=FDRc, ]
+  #testcomp1<-comp1[comp1$FDR<=FDRc, ]
+  testcomp1=comp1[which(comp1$FDR<=FDRc),]
   Fcomp1<-testcomp1[testcomp1$LFC >=LFCc | testcomp1$LFC<= -LFCc, ]
   sortcomp1<-comp1[order(comp1$Read.Count.All), ]
   p10comp1<-(nrow(sortcomp1)*10)/100
@@ -398,7 +399,8 @@ if(comp >=3)
   name1<-gsub("\\..*","",name1)
   comp2<-read.table(DeFiles[randC[2]], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(comp2)[6]<-"LFC"
-  testcomp2<-comp2[comp2$FDR<FDRc, ]
+  #testcomp2<-comp2[comp2$FDR<=FDRc, ]
+  testcomp2=comp2[which(comp2$FDR<=FDRc),]
   Fcomp2<-testcomp2[testcomp2$LFC >=LFCc | testcomp2$LFC<= -LFCc, ]
   name2<-basename(DeFiles[randC[2]])
   name2<-gsub("\\..*","",name2)
@@ -410,7 +412,8 @@ if(comp >=3)
   
   comp3<-read.table(DeFiles[randC[3]], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(comp3)[6]<-"LFC"
-  testcomp3<-comp3[comp3$FDR<FDRc, ]
+  #testcomp3<-comp3[comp3$FDR<FDRc, ]
+  testcomp3=comp3[which(comp3$FDR<=FDRc),]
   Fcomp3<-testcomp3[testcomp3$LFC >=LFCc | testcomp3$LFC<= -LFCc, ]
   name3<-basename(DeFiles[randC[3]])
   name3<-gsub("\\..*","",name3)
