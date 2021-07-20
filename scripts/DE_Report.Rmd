@@ -268,7 +268,7 @@ for(i in 1: length(DeFiles))
   cutoffdf=forprop[p10comp,]
   cutoff=cutoffdf$Read.Count.All
   DEInf<-DEInf[DEInf$Read.Count.All >= cutoff, ]
-  DEnoInf<-DEInf
+  DEnoInf<-DEInf[complete.cases(DEInf),]
   
   if(nrow(DEnoInf)>=2)
   {
