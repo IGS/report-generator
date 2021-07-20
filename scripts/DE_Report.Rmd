@@ -386,39 +386,39 @@ if(comp >=3)
   randC<-sample.int(comp, 3)
   comp1<-read.table(DeFiles[randC[1]], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(comp1)[6]<-"LFC"
-  testcomp1<-comp1[comp1$FDR<FDRc, ]
-  Fcomp1<-testcomp1[testcomp1$LFC >LFCc | testcomp1$LFC< -LFCc, ]
+  testcomp1<-comp1[comp1$FDR<=FDRc, ]
+  Fcomp1<-testcomp1[testcomp1$LFC >=LFCc | testcomp1$LFC<= -LFCc, ]
   sortcomp1<-comp1[order(comp1$Read.Count.All), ]
   p10comp1<-(nrow(sortcomp1)*10)/100
   p10comp1df<-sortcomp1[0:p10comp1,]
   cutoff1<-mean(range(p10comp1df$Read.Count.All))
-  Rcomp1<-Fcomp1[Fcomp1$Read.Count.All > cutoff1, ]
+  Rcomp1<-Fcomp1[Fcomp1$Read.Count.All >= cutoff1, ]
   
   name1<-basename(DeFiles[randC[1]])
   name1<-gsub("\\..*","",name1)
   comp2<-read.table(DeFiles[randC[2]], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(comp2)[6]<-"LFC"
   testcomp2<-comp2[comp2$FDR<FDRc, ]
-  Fcomp2<-testcomp2[testcomp2$LFC >LFCc | testcomp2$LFC< -LFCc, ]
+  Fcomp2<-testcomp2[testcomp2$LFC >=LFCc | testcomp2$LFC<= -LFCc, ]
   name2<-basename(DeFiles[randC[2]])
   name2<-gsub("\\..*","",name2)
   sortcomp2<-comp2[order(comp2$Read.Count.All), ]
   p10comp2<-(nrow(sortcomp2)*10)/100
   p10comp2df<-sortcomp2[0:p10comp2,]
   cutoff2<-mean(range(p10comp2df$Read.Count.All))
-  Rcomp2<-Fcomp2[Fcomp2$Read.Count.All > cutoff2, ]
+  Rcomp2<-Fcomp2[Fcomp2$Read.Count.All >= cutoff2, ]
   
   comp3<-read.table(DeFiles[randC[3]], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(comp3)[6]<-"LFC"
   testcomp3<-comp3[comp3$FDR<FDRc, ]
-  Fcomp3<-testcomp3[testcomp3$LFC >LFCc | testcomp3$LFC< -LFCc, ]
+  Fcomp3<-testcomp3[testcomp3$LFC >=LFCc | testcomp3$LFC<= -LFCc, ]
   name3<-basename(DeFiles[randC[3]])
   name3<-gsub("\\..*","",name3)
   sortcomp3<-comp3[order(comp3$Read.Count.All), ]
   p10comp3<-(nrow(sortcomp3)*10)/100
   p10comp3df<-sortcomp3[0:p10comp3,]
   cutoff3<-mean(range(p10comp3df$Read.Count.All))
-  Rcomp3<-Fcomp3[Fcomp3$Read.Count.All > cutoff3, ]
+  Rcomp3<-Fcomp3[Fcomp3$Read.Count.All >= cutoff3, ]
 
 
 mergeComp<-list(Rcomp1$Feature.ID,Rcomp2$Feature.ID, Rcomp3$Feature.ID)
@@ -431,12 +431,12 @@ if (comp ==2)
   comp1<-read.table(DeFiles[1], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(comp1)[6]<-"LFC"
   testcomp1<-comp1[comp1$FDR<=FDRc, ]
-  Fcomp1<-testcomp1[testcomp1$LFC >LFCc | testcomp1$LFC< -LFCc, ]
+  Fcomp1<-testcomp1[testcomp1$LFC >=LFCc | testcomp1$LFC<= -LFCc, ]
   sortcomp1<-comp1[order(comp1$Read.Count.All), ]
   p10comp1<-(nrow(sortcomp1)*10)/100
   p10comp1df<-sortcomp1[0:p10comp1,]
   cutoff1<-mean(range(p10comp1df$Read.Count.All))
-  Rcomp1<-Fcomp1[Fcomp1$Read.Count.All > cutoff1, ]
+  Rcomp1<-Fcomp1[Fcomp1$Read.Count.All >= cutoff1, ]
   
   name1<-basename(DeFiles[1])
   name1<-gsub("\\..*","",name1)
@@ -444,14 +444,14 @@ if (comp ==2)
   comp2<-read.table(DeFiles[2], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   names(comp2)[6]<-"LFC"
   testcomp2<-comp2[comp2$FDR<FDRc, ]
-  Fcomp2<-testcomp2[testcomp2$LFC >LFCc | testcomp2$LFC< -LFCc, ]
+  Fcomp2<-testcomp2[testcomp2$LFC >=LFCc | testcomp2$LFC<= -LFCc, ]
   name2<-basename(DeFiles[2])
   name2<-gsub("\\..*","",name2)
   sortcomp2<-comp2[order(comp2$Read.Count.All), ]
   p10comp2<-(nrow(sortcomp2)*10)/100
   p10comp2df<-sortcomp2[0:p10comp2,]
   cutoff2<-mean(range(p10comp2df$Read.Count.All))
-  Rcomp2<-Fcomp2[Fcomp2$Read.Count.All > cutoff2, ]
+  Rcomp2<-Fcomp2[Fcomp2$Read.Count.All >= cutoff2, ]
   
   mergeComp<-list(Rcomp1$Feature.ID,Rcomp2$Feature.ID)
 names(mergeComp)<-c(name1, name2)
