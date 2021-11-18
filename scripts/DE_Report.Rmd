@@ -108,6 +108,7 @@ filtde_table=read.table(filter_de_path, check.names=FALSE, as.is = TRUE, header 
 relfit_de=filtde_table[filtde_table$FDR==0.05 & startsWith(filtde_table$ReadCountPercentile,'0.1'),]
 relfit_de$P.value=NULL
 filtde_table=relfit_de[complete.cases(relfit_de),]
+rownames(filtde_table) = seq(length=nrow(filtde_table))
 DeFiles<-list.files(DEpath, pattern = "de_genes.txt", full.names = TRUE)
 table_DE<-data.frame()
 comp_names<-(basename(DeFiles))
@@ -126,8 +127,8 @@ tot<-vector()
 plot_list = list()
 for(k in 1:length(DeFiles))
 {
-  comp_temp<-read.table(DeFiles[k], check.names=FALSE, as.is = TRUE, header = T, blank.lines.skip = TRUE)
-  if("FC" %in% colnames(comp_temp)==FALSE)
+  comp_temp<-read.table(DeFiles[k], check.names=FALSE, as.is = TRUE, header = T, blank.lines.skip = TRUE, sep="\t")
+  if("FC" %in% colnames(comp_temp)==TRUE)
   {
     comparision<-names(comp_temp)[5]
     names(comp_temp)[5]<-"LFC"
@@ -137,17 +138,18 @@ for(k in 1:length(DeFiles))
     fname<-basename(DeFiles[i])
     write.table(comp_temp, file = paste0(DEpath,fname), sep = "\t")
   }
-  if("FC" %in% colnames(comp_temp)==TRUE)
+  if("FC" %in% colnames(comp_temp)==FALSE)
   {
-    comparision<-names(comp_temp)[6]
-    names(comp_temp)[6]<-"LFC"
+    comparision<-names(comp_temp)[5]
+    names(comp_temp)[5]<-"LFC"
   }
   testcomp<-comp_temp[comp_temp$FDR<=FDRc, ]
   Fcomp<-testcomp[testcomp$LFC >=LFCc | testcomp$LFC<= -LFCc, ]
   DEInf<-Fcomp[order(Fcomp$Read.Count.All), ]
+  comp_temp_o=comp_temp[order(comp_temp$Read.Count.All),]
   ###changed from Fcomp to comp temp    
-  p10comp<-(nrow(comp_temp)*10)/100
-      p10compdf<-comp_temp[0:p10comp,]
+  p10comp<-(nrow(comp_temp_o)*10)/100
+      p10compdf<-comp_temp_o[0:p10comp,]
       cutoff<-floor(mean(range(p10compdf$Read.Count.All)))
       ##rounded value instead of raw for counts
       Fcomp<-DEInf[round(DEInf$Read.Count.All) >= cutoff, ]
@@ -198,7 +200,7 @@ include_graphics(DE_Table_img, dpi=125)
 for(i in 1: length(DeFiles))
 {
 DEInf<-read.table(DeFiles[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
-  if("FC" %in% colnames(DEInf)==FALSE)
+  if("FC" %in% colnames(DEInf)==TRUE)
   {
     comparision<-names(DEInf)[5]
     names(DEInf)[5]<-"LFC"
@@ -208,10 +210,10 @@ DEInf<-read.table(DeFiles[i], check.names=FALSE, sep="\t", as.is = TRUE, header 
     fname<-basename(DeFiles[i])
     write.table(DEInf, file = paste0(DEpath,fname), sep = "\t")
   }
-  if("FC" %in% colnames(DEInf)==TRUE)
+  if("FC" %in% colnames(DEInf)==FALSE)
   {
-    comparision<-names(DEInf)[6]
-    names(DEInf)[6]<-"LFC"
+    comparision<-names(DEInf)[5]
+    names(DEInf)[5]<-"LFC"
   }
 #comparision<-names(DEInf)[6]
 #names(DEInf)[6]<-"LFC"
@@ -223,12 +225,12 @@ negINF<-min(columni, na.rm = T)
 DEInf$LFC[DEInf$LFC=="-Inf"]<-negINF
 DEInf$LFC[DEInf$LFC=="Inf"]<-posINF
 
-columnIfc <- DEInf$FC[which(!is.na(DEInf$FC))]
-columnifc <- columnIfc[which(columnIfc < Inf)]
-posINFfc<-max(columnifc, na.rm = T)
-columnifc <- columnIfc[which(columnIfc > -Inf)]
-negINFfc<-min(columnifc, na.rm = T)
-DEInf$FC[DEInf$FC=="Inf"]<-posINFfc
+#columnIfc <- DEInf$FC[which(!is.na(DEInf$FC))]
+#columnifc <- columnIfc[which(columnIfc < Inf)]
+#posINFfc<-max(columnifc, na.rm = T)
+#columnifc <- columnIfc[which(columnIfc > -Inf)]
+#negINFfc<-min(columnifc, na.rm = T)
+#DEInf$FC[DEInf$FC=="Inf"]<-posINFfc
 ####pval->fdr may 21
 RepINF<-data.frame(DEInf$Read.Count.All, DEInf$LFC, DEInf$FDR)
 colnames(RepINF)<-c("baseMean", "log2FoldChange", "padj")
@@ -249,9 +251,10 @@ for(i in 1: length(DeFiles))
   DEInf<-read.table(DeFiles[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
   forprop<-DEInf[order(DEInf$Read.Count.All), ]
   DECnts<-read.table(DEcounts[i], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
-  names(DEInf)[6]<-"LFC"
+  names(DEInf)[5]<-"LFC"
   DEInf<-DEInf[DEInf$FDR<=FDRc, ]
   DEInf<-DEInf[DEInf$LFC >=LFCc | DEInf$LFC<= -LFCc, ]
+  DEInf=DEInf[complete.cases(DEInf),]
   DEInf<-DEInf[order(DEInf$Read.Count.All), ]
   
   
@@ -323,6 +326,7 @@ for(i in 1: length(DeFiles))
   resort<-Filtered_norm[match(rownames(Hmap_LFC), rownames(Filtered_norm)),]
   resort<-resort[,order(match(paste(colnames(resort)), paste(comp_sampleList$V1)))]
   haDE.h<-Heatmap(data.frame(Hmap_LFC$DEnoInf.LFC), cluster_rows = FALSE, width = 0.25, show_heatmap_legend = FALSE, show_row_names = FALSE, show_column_names = FALSE, col = colorRamp2(c(minRD, maxRD), c("gray", "pink")))
+  #haDE.h<-Heatmap(as.matrix(Hmap_LFC$DEnoInf.LFC), cluster_rows = FALSE, width = 0.25, show_heatmap_legend = FALSE, show_row_names = FALSE, show_column_names = FALSE, col = colorRamp2(c(minRD, maxRD), c("gray", "pink")))
   hmap_plot<- Heatmap(resort, show_row_names = FALSE, column_names_gp = gpar(fontsize = 6), name="ScaledCPM", column_title_gp = gpar(fontsize=6), column_title_side = "bottom", top_annotation = heatmap_a, row_names_gp = gpar(fontsize = 2), cluster_rows = FALSE)
   #print(paste0("Size:",nrow(resort)))
   htlistDE=hmap_plot +  haDE.h
@@ -385,7 +389,7 @@ if(comp >=3)
 {
   randC<-sample.int(comp, 3)
   comp1<-read.table(DeFiles[randC[1]], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
-  names(comp1)[6]<-"LFC"
+  names(comp1)[5]<-"LFC"
   #testcomp1<-comp1[comp1$FDR<=FDRc, ]
   testcomp1=comp1[which(comp1$FDR<=FDRc),]
   Fcomp1<-testcomp1[testcomp1$LFC >=LFCc | testcomp1$LFC<= -LFCc, ]
@@ -398,7 +402,7 @@ if(comp >=3)
   name1<-basename(DeFiles[randC[1]])
   name1<-gsub("\\..*","",name1)
   comp2<-read.table(DeFiles[randC[2]], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
-  names(comp2)[6]<-"LFC"
+  names(comp2)[5]<-"LFC"
   #testcomp2<-comp2[comp2$FDR<=FDRc, ]
   testcomp2=comp2[which(comp2$FDR<=FDRc),]
   Fcomp2<-testcomp2[testcomp2$LFC >=LFCc | testcomp2$LFC<= -LFCc, ]
@@ -411,7 +415,7 @@ if(comp >=3)
   Rcomp2<-Fcomp2[Fcomp2$Read.Count.All >= cutoff2, ]
   
   comp3<-read.table(DeFiles[randC[3]], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
-  names(comp3)[6]<-"LFC"
+  names(comp3)[5]<-"LFC"
   #testcomp3<-comp3[comp3$FDR<FDRc, ]
   testcomp3=comp3[which(comp3$FDR<=FDRc),]
   Fcomp3<-testcomp3[testcomp3$LFC >=LFCc | testcomp3$LFC<= -LFCc, ]
@@ -432,7 +436,7 @@ venn<-venn.diagram(mergeComp, filename = NULL, fill = c("orange", "blue", "green
 if (comp ==2)
 {
   comp1<-read.table(DeFiles[1], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
-  names(comp1)[6]<-"LFC"
+  names(comp1)[5]<-"LFC"
   testcomp1<-comp1[comp1$FDR<=FDRc, ]
   Fcomp1<-testcomp1[testcomp1$LFC >=LFCc | testcomp1$LFC<= -LFCc, ]
   sortcomp1<-comp1[order(comp1$Read.Count.All), ]
@@ -445,7 +449,7 @@ if (comp ==2)
   name1<-gsub("\\..*","",name1)
   
   comp2<-read.table(DeFiles[2], check.names=FALSE, sep="\t", as.is = TRUE, header = T)
-  names(comp2)[6]<-"LFC"
+  names(comp2)[5]<-"LFC"
   testcomp2<-comp2[comp2$FDR<FDRc, ]
   Fcomp2<-testcomp2[testcomp2$LFC >=LFCc | testcomp2$LFC<= -LFCc, ]
   name2<-basename(DeFiles[2])
