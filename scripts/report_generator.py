@@ -90,8 +90,11 @@ def main():
                 #generate_fastqc_report(extracted_path, wrap_FQC, rpath, args.pname, args.info)
                 generate_fastqc_report(extracted_path, rpath, args.pname, args.info)
             if args.aln:
-                #generate_alignment_report(extracted_path, wrap_ALN, rpath, args.pname, args.info)
-                generate_alignment_report(extracted_path, rpath, args.pname, args.info)
+                if args.prok:
+                    generate_prok_alignment_report(extracted_path, rpath, args.pname, args.info)
+                else:
+                    #generate_alignment_report(extracted_path, wrap_ALN, rpath, args.pname, args.info)
+                    generate_alignment_report(extracted_path, rpath, args.pname, args.info)
             if args.ge:
                 if args.mapping:
                     print("In mapping file GE")
@@ -159,7 +162,7 @@ def generate_all_reports(extracted_path, rpath, project_name, info_file, prok, m
 
     #wrap_ALN = os.path.join(wrappers_dir, "wrapper_Alignment.R")
     if prok:
-        generate_alignment_report(extracted_path, rpath, args.pname, args.info)
+        generate_prok_alignment_report(extracted_path, rpath, args.pname, args.info)
     #    wrap_ALN = os.path.join(wrappers_dir, "wrapper_Alignment_prok.R")
     #if args.awrap:
     #    wrap_ALN = args.awrap
@@ -205,6 +208,31 @@ def generate_alignment_report(outdir, rpath, project_name, info_file):
     #except subprocess.CalledProcessError as e:
     except rpy2.rinterface.RRuntimeError as e: 
         print(e)
+
+
+def generate_prok_alignment_report(outdir, rpath, project_name, info_file):
+    """
+    Input: path to output directory with extracted files, path to wrapper R script, path to R, name of project and path to info file.
+
+    Output: Alignment report generated and output plots saved in AlignmentFiles
+    """
+    print("Prok Alignment")
+    outdir = os.path.normpath(outdir)
+    output_files = os.path.join(outdir, "AlignmentFiles")
+    if not os.path.isdir(output_files):
+        os.makedirs(output_files)
+    try:
+        aln_rmd_cmd = '''
+        rmarkdown::render(paste0(rpath,"/Alignment_Report_Prok.Rmd"), params=list( projectname=project_name, pathd=outdir, infof=info_file), output_dir = outdir, output_file = paste(project_name,"_", Sys.Date(), '_Alignment_Report.pdf', sep=''))
+        '''
+        print(aln_rmd_cmd)
+        robjects.r(aln_rmd_cmd)
+        #subprocess.check_call([rpath, wrapper, project_name, outdir, info_file, outdir], shell = False)
+        #subprocess.check_call(["Alignment_Report.Rmd", wrapper, project_name, outdir, info_file, outdir], shell = False)
+    #except subprocess.CalledProcessError as e:
+    except rpy2.rinterface.RRuntimeError as e:
+        print(e)
+
 
 def generate_de_report(outdir, rpath, project_name, info_file):
     """
