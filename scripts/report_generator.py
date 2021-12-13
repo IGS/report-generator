@@ -166,7 +166,8 @@ def generate_all_reports(extracted_path, rpath, project_name, info_file, prok, m
     #    wrap_ALN = os.path.join(wrappers_dir, "wrapper_Alignment_prok.R")
     #if args.awrap:
     #    wrap_ALN = args.awrap
-    generate_alignment_report(extracted_path, rpath, args.pname, args.info)
+    else:
+        generate_alignment_report(extracted_path, rpath, args.pname, args.info)
 
     if mapping_file:
         #wrap_GE_mapping = os.path.join(wrappers_dir, "wrapper_GE_mapping.R")
