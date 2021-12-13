@@ -57,16 +57,18 @@ info<-unlist(params$infof)
 myinfo <- data.frame(read.table(info, check.names=FALSE))
 path=getwd()
 gridpath=paste0(direc,"/FastQC_Outputs")
+##remove old outputs
+do.call(file.remove, list(list.files(gridpath, full.names = TRUE)))
 dir.create(file.path(path, gridpath), showWarnings = FALSE)
 baseQ<-paste0(direc, "/FastQC_Files/BaseQuality/")
 KmerP<-paste0(direc, "/FastQC_Files/KmerProfiles/")
 d1<-data.frame()
 select<-data.frame()
-groups<-levels(myinfo$V2)
+groups<-unique(myinfo$V2)
 counter<-length(groups)
 for (i in 1:counter)
 {
-  d1<-myinfo[which(myinfo$V2==groups[i]), ]
+  d1<-myinfo[which(myinfo[,2]==groups[i]), ]
   if(nrow(d1)>=2)
   {
   rand<-sample.int(nrow(d1), 2)
@@ -77,7 +79,7 @@ for (i in 1:counter)
   }
   if(nrow(d1)==1)
   {
-    select<-rbind(select, d1)
+    c<-rbind(select, d1)
   }
 }
 sN<-select$V1
@@ -144,7 +146,7 @@ numk<-length(imagesK)
 firstK1<-grid::rasterGrob(as.raster(imagesK[1]))
 firstK2<-grid::rasterGrob(as.raster(imagesK[2]))
 cap<-paste("Plots illustrating the occurrence of the top 6 kmers across all reads for sample. Left Panel: First read of read-pair. Right panel: Second read of read-pair")
-  str<-paste (headersU[1], headersU[2], collapse = " ", sep = "                                                                                ")
+  str<-paste (c[1], headersU[2], collapse = " ", sep = "                                                                                ")
   #g<-grid.arrange(firstK1, firstK2, ncol=2, top=textGrob(str, gp=gpar(fontface = 3L, fontsize=5)), bottom = textGrob(cap, gp = gpar(fontface = 3L, fontsize = 5)))
   #g<-grid.arrange(firstK1, firstK2, ncol=2, top=textGrob(str, gp=gpar(fontface = 3L, fontsize=5)))
   #ggsave(g, file=paste0("grid_kmer_first.png"), width = 6, height = 2.5, path=gridpath)
