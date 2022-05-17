@@ -245,8 +245,9 @@ title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
 
 ##hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6), show_row_names = FALSE, clustering_distance_columns = "euclidean")
 
-hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6), show_row_names = FALSE, cluster_columns = col_dend)
+#hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6), show_row_names = FALSE, cluster_columns = col_dend, clustering_distance_columns = "euclidean")
 
+hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6),cluster_columns = col_dend, cluster_rows = col_dend, show_row_names = F)
 #hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6), show_row_names = FALSE, clustering_distance_columns = "euclidean", cluster_columns = col_dend)
 
 draw(hold_heatmap_1)
