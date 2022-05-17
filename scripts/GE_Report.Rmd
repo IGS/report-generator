@@ -241,7 +241,11 @@ title_wrap<-strwrap("Figure 3. Sample clustering by Euclidean distance: This hea
 
 title_wrapped<-sapply(title_wrap, paste, collapse = "\n")
 
-hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6), show_row_names = FALSE, clustering_distance_columns = "euclidean")
+##Added cluster_columns = col_dend on May 16 2022 due to clustering incorrectly. Seems like previously I removed it for some reason. Keeping log in case it happens again. I removed the clustering_distance_columns = "euclidean". ---->
+
+##hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6), show_row_names = FALSE, clustering_distance_columns = "euclidean")
+
+hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6), show_row_names = FALSE, cluster_columns = col_dend)
 
 #hold_heatmap_1<-Heatmap(EucDist,name="Euc dist", column_title = gpar(title_wrapped), column_title_gp = gpar(fontsize=9), column_title_side = "top", top_annotation = ha_types, heatmap_legend_param = list(labels_gp = gpar(fontsize = 5, fontfamily="Helvetica")),column_names_gp = gpar(fontsize = 6), show_row_names = FALSE, clustering_distance_columns = "euclidean", cluster_columns = col_dend)
 
@@ -259,6 +263,7 @@ invisible(dev.off())
 
 ```{r heatmapP, echo=FALSE, warning=FALSE, fig.width=10, fig.height=12}
 qc_passed<-match_IDs(scaled, map.all) 
+#col_dend=as.dendrogram(hclust(dist(t(scaled), method = "Pearson")))
 if (qc_passed == T) {
 pcor<-cor(scaled, use="complete.obs", method = "pearson")
 title_wrap<-strwrap("Figure 4. Sample clustering by Pearson co-efficient: This heatmap was computed by Pearson co-efficient of expression, based on normalized data. Color coding is by Pearson co-efficient and by group/condition. This figure can indicate the relationship between the samples and groups.", width = 150, simplify = F)
