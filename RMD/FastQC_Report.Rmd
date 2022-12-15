@@ -53,7 +53,7 @@ setwd(direc)
 filen<-"Summary.txt"
 dir.create(file.path(direc, "/FastQC_Files/"), showWarnings = FALSE)
 info<-unlist(params$infof)
-#info="/Users/achatterjee/XMMCL_2018.samples.info"
+#info="/Users/apaala.chatterjee/RG/debug/XMKUV_alignment/data/XMKUV.fastq.info"
 myinfo <- data.frame(read.table(info, check.names=FALSE))
 path=getwd()
 gridpath=paste0(direc,"/FastQC_Outputs")
@@ -62,7 +62,10 @@ baseQ<-paste0(direc, "/FastQC_Files/BaseQuality/")
 KmerP<-paste0(direc, "/FastQC_Files/KmerProfiles/")
 d1<-data.frame()
 select<-data.frame()
-groups<-levels(myinfo$V2)
+#debug Dec2022
+#levels the issue?
+#groups<-levels(myinfo$V2)
+groups<-unique(myinfo$V2)
 counter<-length(groups)
 for (i in 1:counter)
 {
@@ -96,13 +99,16 @@ for(k in 1:length(sampleN))
   listnum<-rbind(listnum, k, k)
   sname<-rbind(sname,sampleN[k], sampleN[k])
   inFilef <- list.files(baseQ, pattern=glob2rx(searchf), full.names=TRUE)
-  inFilePaths<-rbind(inFilePaths, inFilef)
+  inFilePaths<-cbind(inFilePaths, inFilef)
 }
 selectpaths<-unlist(inFilePaths, recursive = TRUE, use.names = TRUE)
 snameV<-as.vector(sname)
 headersU<-unlist(headers, recursive = TRUE, use.names = TRUE)
 images<-image_read(selectpaths)
 num<-length(images)
+###Problem: order of select paths is wrong so incorrect images are being picked in the order of select paths. Change that order to fix. changed rbind to cbind in 102
+
+for(l in length(inFilePaths))
 
 ###First Image Caption
 first1<-grid::rasterGrob(as.raster(images[1]))
@@ -133,7 +139,8 @@ for(k in 1:length(sampleN))
   head2<-paste0(sampleN[k]," Reverse")
   headers<-rbind(headers, head1, head2)
   inFilef <- list.files(path=KmerP, pattern=glob2rx(searchf), full.names=TRUE)
-  infilekmerPaths<-rbind(infilekmerPaths, inFilef)
+  #changed rbind to cbind
+  infilekmerPaths<-cbind(infilekmerPaths, inFilef)
 }
 selectkmerpaths<-unlist(infilekmerPaths, recursive = TRUE, use.names = TRUE)
 imagesK<-list()
