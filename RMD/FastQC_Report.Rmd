@@ -106,18 +106,17 @@ snameV<-as.vector(sname)
 headersU<-unlist(headers, recursive = TRUE, use.names = TRUE)
 images<-image_read(selectpaths)
 num<-length(images)
-###Problem: order of select paths is wrong so incorrect images are being picked in the order of select paths. Change that order to fix. changed rbind to cbind in 102
-
-for(l in length(inFilePaths))
+###Problem: order of select paths is wrong so incorrect images are being picked in the order of select paths. Change that order to fix. changed rbind to cbind in 102. Didnt work.
+#order of samples being mixed up? No it the image read thats messing  up the order. So read image in order from select path in loop
 
 ###First Image Caption
-first1<-grid::rasterGrob(as.raster(images[1]))
-first2<-grid::rasterGrob(as.raster(images[2]))
+first1<-grid::rasterGrob(as.raster(image_read(selectpaths[1])))
+first2<-grid::rasterGrob(as.raster(image_read(selectpaths[2])))
 cap<-paste("Box plots illustrating the distribution of per base quality across all reads for sample. Left Panel: First read of read-pair. Right panel: Second read of read-pair")
   str<-paste (headersU[1], headersU[2], collapse = " ", sep = "                                                                                ")
 for(i in seq(1,num,2)){
-  raster1<-grid::rasterGrob(as.raster(images[i]))
-  raster2<-grid::rasterGrob(as.raster(images[i+1]))
+  raster1<-grid::rasterGrob(as.raster(image_read(selectpaths[i])))
+  raster2<-grid::rasterGrob(as.raster(image_read(selectpaths[i+1])))
   cap1<-paste("Figure: Box plots illustrating the distribution of per base quality across all reads for sample")
   cap2<-"Left Panel: First read of read-pair. Right panel: Second read of read-pair"
   cap<-paste(cap1," ", snameV[i], ". ", cap2)
@@ -126,6 +125,23 @@ for(i in seq(1,num,2)){
   
   ggsave(g, file=paste0("grid_", i,"_baseq_fig.png"), width = 6, height = 2.5, path=gridpath)
 }
+
+# ###First Image Caption
+# first1<-grid::rasterGrob(as.raster(images[1]))
+# first2<-grid::rasterGrob(as.raster(images[2]))
+# cap<-paste("Box plots illustrating the distribution of per base quality across all reads for sample. Left Panel: First read of read-pair. Right panel: Second read of read-pair")
+#   str<-paste (headersU[1], headersU[2], collapse = " ", sep = "                                                                                ")
+# for(i in seq(1,num,2)){
+#   raster1<-grid::rasterGrob(as.raster(images[i]))
+#   raster2<-grid::rasterGrob(as.raster(images[i+1]))
+#   cap1<-paste("Figure: Box plots illustrating the distribution of per base quality across all reads for sample")
+#   cap2<-"Left Panel: First read of read-pair. Right panel: Second read of read-pair"
+#   cap<-paste(cap1," ", snameV[i], ". ", cap2)
+#   str<-paste (headersU[i], headersU[i+1], collapse = " ", sep = "                                                                                ")
+#   g<-grid.arrange(raster1, raster2, ncol=2, top=textGrob(str, gp=gpar(fontface = 3L, fontsize=5)))
+#   
+#   ggsave(g, file=paste0("grid_", i,"_baseq_fig.png"), width = 6, height = 2.5, path=gridpath)
+# }
 
 ```
 
