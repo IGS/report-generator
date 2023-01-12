@@ -53,22 +53,23 @@ setwd(direc)
 filen<-"Summary.txt"
 dir.create(file.path(direc, "/FastQC_Files/"), showWarnings = FALSE)
 info<-unlist(params$infof)
-#info="/Users/achatterjee/XMMCL_2018.samples.info"
+#info="/Users/apaala.chatterjee/RG/debug/XMKUV_alignment/data/XMKUV.fastq.info"
 myinfo <- data.frame(read.table(info, check.names=FALSE))
 path=getwd()
 gridpath=paste0(direc,"/FastQC_Outputs")
-##remove old outputs
-do.call(file.remove, list(list.files(gridpath, full.names = TRUE)))
 dir.create(file.path(path, gridpath), showWarnings = FALSE)
 baseQ<-paste0(direc, "/FastQC_Files/BaseQuality/")
 KmerP<-paste0(direc, "/FastQC_Files/KmerProfiles/")
 d1<-data.frame()
 select<-data.frame()
+#debug Dec2022
+#levels the issue?
+#groups<-levels(myinfo$V2)
 groups<-unique(myinfo$V2)
 counter<-length(groups)
 for (i in 1:counter)
 {
-  d1<-myinfo[which(myinfo[,2]==groups[i]), ]
+  d1<-myinfo[which(myinfo$V2==groups[i]), ]
   if(nrow(d1)>=2)
   {
   rand<-sample.int(nrow(d1), 2)
@@ -79,7 +80,7 @@ for (i in 1:counter)
   }
   if(nrow(d1)==1)
   {
-    c<-rbind(select, d1)
+    select<-rbind(select, d1)
   }
 }
 sN<-select$V1
@@ -98,22 +99,24 @@ for(k in 1:length(sampleN))
   listnum<-rbind(listnum, k, k)
   sname<-rbind(sname,sampleN[k], sampleN[k])
   inFilef <- list.files(baseQ, pattern=glob2rx(searchf), full.names=TRUE)
-  inFilePaths<-rbind(inFilePaths, inFilef)
+  inFilePaths<-cbind(inFilePaths, inFilef)
 }
 selectpaths<-unlist(inFilePaths, recursive = TRUE, use.names = TRUE)
 snameV<-as.vector(sname)
 headersU<-unlist(headers, recursive = TRUE, use.names = TRUE)
 images<-image_read(selectpaths)
 num<-length(images)
+###Problem: order of select paths is wrong so incorrect images are being picked in the order of select paths. Change that order to fix. changed rbind to cbind in 102. Didnt work.
+#order of samples being mixed up? No it the image read thats messing  up the order. So read image in order from select path in loop
 
 ###First Image Caption
-first1<-grid::rasterGrob(as.raster(images[1]))
-first2<-grid::rasterGrob(as.raster(images[2]))
+first1<-grid::rasterGrob(as.raster(image_read(selectpaths[1])))
+first2<-grid::rasterGrob(as.raster(image_read(selectpaths[2])))
 cap<-paste("Box plots illustrating the distribution of per base quality across all reads for sample. Left Panel: First read of read-pair. Right panel: Second read of read-pair")
   str<-paste (headersU[1], headersU[2], collapse = " ", sep = "                                                                                ")
 for(i in seq(1,num,2)){
-  raster1<-grid::rasterGrob(as.raster(images[i]))
-  raster2<-grid::rasterGrob(as.raster(images[i+1]))
+  raster1<-grid::rasterGrob(as.raster(image_read(selectpaths[i])))
+  raster2<-grid::rasterGrob(as.raster(image_read(selectpaths[i+1])))
   cap1<-paste("Figure: Box plots illustrating the distribution of per base quality across all reads for sample")
   cap2<-"Left Panel: First read of read-pair. Right panel: Second read of read-pair"
   cap<-paste(cap1," ", snameV[i], ". ", cap2)
@@ -122,6 +125,23 @@ for(i in seq(1,num,2)){
   
   ggsave(g, file=paste0("grid_", i,"_baseq_fig.png"), width = 6, height = 2.5, path=gridpath)
 }
+
+# ###First Image Caption
+# first1<-grid::rasterGrob(as.raster(images[1]))
+# first2<-grid::rasterGrob(as.raster(images[2]))
+# cap<-paste("Box plots illustrating the distribution of per base quality across all reads for sample. Left Panel: First read of read-pair. Right panel: Second read of read-pair")
+#   str<-paste (headersU[1], headersU[2], collapse = " ", sep = "                                                                                ")
+# for(i in seq(1,num,2)){
+#   raster1<-grid::rasterGrob(as.raster(images[i]))
+#   raster2<-grid::rasterGrob(as.raster(images[i+1]))
+#   cap1<-paste("Figure: Box plots illustrating the distribution of per base quality across all reads for sample")
+#   cap2<-"Left Panel: First read of read-pair. Right panel: Second read of read-pair"
+#   cap<-paste(cap1," ", snameV[i], ". ", cap2)
+#   str<-paste (headersU[i], headersU[i+1], collapse = " ", sep = "                                                                                ")
+#   g<-grid.arrange(raster1, raster2, ncol=2, top=textGrob(str, gp=gpar(fontface = 3L, fontsize=5)))
+#   
+#   ggsave(g, file=paste0("grid_", i,"_baseq_fig.png"), width = 6, height = 2.5, path=gridpath)
+# }
 
 ```
 
@@ -135,7 +155,8 @@ for(k in 1:length(sampleN))
   head2<-paste0(sampleN[k]," Reverse")
   headers<-rbind(headers, head1, head2)
   inFilef <- list.files(path=KmerP, pattern=glob2rx(searchf), full.names=TRUE)
-  infilekmerPaths<-rbind(infilekmerPaths, inFilef)
+  #changed rbind to cbind
+  infilekmerPaths<-cbind(infilekmerPaths, inFilef)
 }
 selectkmerpaths<-unlist(infilekmerPaths, recursive = TRUE, use.names = TRUE)
 imagesK<-list()
