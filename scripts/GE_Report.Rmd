@@ -38,9 +38,11 @@ heatmap showing gene expression patterns based on the hierarchical clustering of
 percent of expressed genes across all samples. For analysis with equal or less than six samples,
 scatter plots (Figure 10) is generated across samples based on log10(CPM).
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning=FALSE, message=F}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+#knitr::opts_chunk$set(fig.pos = "!H", out.extra = "")
 library(rmarkdown)
 library(knitr)
 library(grid)
